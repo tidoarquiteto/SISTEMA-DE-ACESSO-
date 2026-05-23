@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T.I do Arquiteto — Sistema de Acessos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --bg-deep:    #080e1a;
+    --bg-panel:   #0d1526;
+    --bg-card:    #111d33;
+    --bg-hover:   #162040;
+    --border:     rgba(0,229,255,0.10);
+    --border-md:  rgba(0,229,255,0.20);
+    --cyan:       #00e5ff;
+    --cyan-dim:   rgba(0,229,255,0.15);
+    --cyan-glow:  rgba(0,229,255,0.35);
+    --text-hi:    #ffffff;
+    --text-md:    #8ea8cc;
+    --text-lo:    #4a6080;
+    --green:      #00d68f;
+    --green-bg:   rgba(0,214,143,0.10);
+    --amber:      #ffb800;
+    --amber-bg:   rgba(255,184,0,0.10);
+    --red:        #ff4d6a;
+    --red-bg:     rgba(255,77,106,0.10);
+    --blue-soft:  rgba(0,140,255,0.12);
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-deep);
+    color: var(--text-hi);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── SCROLLBAR ─────────────────────────────────── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+
+  /* ── LOGIN SCREEN ──────────────────────────────── */
+  #login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg-deep);
+    position: relative;
+    overflow: hidden;
+  }
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .login-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-lg);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+    z-index: 1;
+  }
+  .login-logo {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--cyan);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  .login-sub {
+    font-size: 12px;
+    color: var(--text-md);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .login-demo-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .demo-pill {
+    flex: 1;
+    min-width: 80px;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-md);
+    transition: all .2s;
+  }
+  .demo-pill:hover { border-color: var(--cyan); color: var(--cyan); }
+  .demo-pill.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+  .demo-pill span { display: block; font-weight: 600; font-size: 12px; color: inherit; }
+
+  /* ── FORMS ─────────────────────────────────────── */
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 12px; color: var(--text-md); display: block; margin-bottom: 5px; font-weight: 500; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+  }
+  .field select option { background: var(--bg-card); }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── BUTTONS ───────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border-radius: var(--r-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all .2s; font-family: var(--font-body);
+  }
+  .btn-cyan {
+    background: var(--cyan); color: var(--bg-deep);
+  }
+  .btn-cyan:hover { background: #33eaff; box-shadow: 0 0 16px var(--cyan-glow); }
+  .btn-outline {
+    background: transparent; color: var(--text-md);
+    border: 1px solid var(--border-md);
+  }
+  .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn-ghost {
+    background: transparent; color: var(--text-md); border: none;
+    padding: 7px 12px; font-size: 12px;
+  }
+  .btn-ghost:hover { color: var(--text-hi); }
+  .btn-danger {
+    background: var(--red-bg); color: var(--red);
+    border: 1px solid rgba(255,77,106,0.2);
+  }
+  .btn-danger:hover { background: rgba(255,77,106,0.2); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-green {
+    background: var(--green-bg); color: var(--green);
+    border: 1px solid rgba(0,214,143,0.2);
+  }
+  .btn-green:hover { background: rgba(0,214,143,0.2); }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ── BADGES ─────────────────────────────────────── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; padding: 3px 9px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .badge-pending { background: var(--amber-bg); color: var(--amber); }
+  .badge-progress { background: var(--blue-soft); color: #5ab4ff; }
+  .badge-done { background: var(--green-bg); color: var(--green); }
+  .badge-cobrar { background: var(--red-bg); color: var(--red); }
+  .badge-cobrado { background: rgba(90,180,255,0.1); color: #5ab4ff; }
+  .badge-admin { background: rgba(180,120,255,0.12); color: #c084fc; }
+  .badge-atendente { background: var(--cyan-dim); color: var(--cyan); }
+  .badge-tecnico { background: var(--amber-bg); color: var(--amber); }
+
+  /* ── APP SHELL ──────────────────────────────────── */
+  #app { display: none; flex: 1; flex-direction: column; height: 100vh; }
+  #app.visible { display: flex; }
+
+  /* ── TOPBAR ─────────────────────────────────────── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem; height: 56px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .topbar-logo {
+    font-family: var(--font-head);
+    font-weight: 800; font-size: 16px; color: var(--cyan);
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .topbar-logo-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-md);
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--cyan-dim); border: 1px solid var(--border-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--cyan);
+    font-family: var(--font-head);
+  }
+
+  /* ── LAYOUT ─────────────────────────────────────── */
+  .layout { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── SIDEBAR ─────────────────────────────────────── */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .nav-section {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    color: var(--text-lo); padding: 12px 20px 6px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; font-size: 13px; color: var(--text-md);
+    cursor: pointer; transition: all .15s; border: none;
+    background: none; width: 100%; text-align: left;
+    font-family: var(--font-body); position: relative;
+  }
+  .nav-item i { font-size: 16px; }
+  .nav-item:hover { color: var(--text-hi); background: var(--bg-hover); }
+  .nav-item.active { color: var(--cyan); background: var(--cyan-dim); }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--cyan); border-radius: 0 3px 3px 0;
+  }
+  .nav-badge {
+    margin-left: auto; background: var(--red);
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px;
+    min-width: 18px; text-align: center;
+  }
+
+  /* ── MAIN CONTENT ───────────────────────────────── */
+  .main {
+    flex: 1; overflow-y: auto;
+    padding: 1.5rem;
+    background: var(--bg-deep);
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .page-title {
+    font-family: var(--font-head); font-size: 20px; font-weight: 700;
+    color: var(--text-hi);
+  }
+  .page-sub { font-size: 13px; color: var(--text-lo); margin-top: 2px; }
+
+  /* ── STAT CARDS ─────────────────────────────────── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 1rem 1.2rem;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--cyan));
+    opacity: .4;
+  }
+  .stat-label { font-size: 11px; color: var(--text-lo); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .stat-val { font-family: var(--font-head); font-size: 26px; font-weight: 800; color: var(--accent, var(--cyan)); }
+  .stat-icon {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 28px; color: var(--accent, var(--cyan)); opacity: .12;
+  }
+
+  /* ── CARDS ──────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 1.2rem;
+    margin-bottom: 12px;
+  }
+  .card:hover { border-color: var(--border-md); }
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 10px; gap: 10px;
+  }
+  .card-client { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+  .card-meta { font-size: 12px; color: var(--text-md); margin-top: 2px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .card-meta span { display: flex; align-items: center; gap: 4px; }
+  .card-meta i { font-size: 13px; }
+  .card-service { font-size: 13px; color: var(--text-md); margin: 8px 0; line-height: 1.5; }
+  .card-obs { font-size: 12px; color: var(--text-lo); margin-top: 4px; font-style: italic; }
+  .card-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .card-valor { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--cyan); }
+  .card-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* ── REMINDER BOX ───────────────────────────────── */
+  .reminder {
+    background: rgba(255,184,0,0.06);
+    border: 1px solid rgba(255,184,0,0.2);
+    border-radius: var(--r-md);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1.2rem;
+  }
+  .reminder i { font-size: 20px; color: var(--amber); }
+  .reminder-text { font-size: 13px; color: var(--amber); }
+
+  /* ── FILTERS ────────────────────────────────────── */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text-md);
+    font-family: var(--font-body); transition: all .15s;
+  }
+  .filter-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .filter-btn.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+
+  /* ── EMPTY STATE ─────────────────────────────────── */
+  .empty {
+    text-align: center; padding: 3rem;
+    color: var(--text-lo); font-size: 13px;
+  }
+  .empty i { font-size: 36px; display: block; margin-bottom: 10px; opacity: .4; }
+
+  /* ── MODAL ──────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-lg);
+    padding: 1.5rem;
+    width: 100%; max-width: 540px;
+    max-height: 90vh; overflow-y: auto;
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:none;opacity:1} }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+  .modal-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; }
+
+  /* ── DIVIDER ─────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* ── TABLE ──────────────────────────────────────── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th {
+    text-align: left; padding: 8px 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    color: var(--text-lo); text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl td { padding: 10px 12px; border-bottom: 1px solid rgba(0,229,255,0.04); color: var(--text-md); }
+  .tbl tr:last-child td { border: none; }
+  .tbl tr:hover td { background: var(--bg-hover); color: var(--text-hi); }
+
+  /* ── SECTION TITLE ───────────────────────────────── */
+  .section-title {
+    font-family: var(--font-head); font-size: 14px; font-weight: 700;
+    color: var(--text-md); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── GLOW LINE ───────────────────────────────────── */
+  .glow-line { height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); margin: 1.5rem 0; opacity: .3; }
+
+  /* ── RESPONSIVO ──────────────────────────────────── */
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { width: 180px; }
+    .g2, .g3 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .sidebar { display: none; }
+    .main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">T.I DO ARQUITETO</div>
+    <div class="login-sub">Sistema de Gestão de Acessos</div>
+
+    <div style="font-size:11px;color:var(--text-lo);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Entrar como (demo):</div>
+    <div class="login-demo-pills">
+      <div class="demo-pill active" onclick="selectRole('admin',this)"><span>Admin</span>Controle total</div>
+      <div class="demo-pill" onclick="selectRole('atendente',this)"><span>Atendente</span>Chamados</div>
+      <div class="demo-pill" onclick="selectRole('tecnico',this)"><span>Técnico</span>Execução</div>
+    </div>
+
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" value="admin@tidoarquiteto.com.br">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" value="••••••••">
+    </div>
+    <button class="btn btn-cyan btn-full" onclick="doLogin()" style="margin-top:4px;">
+      <i class="ti ti-login"></i> Entrar no sistema
+    </button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-lo);">
+      Supabase Auth + RLS por perfil de usuário
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-dot"></div>
+      T.I DO ARQUITETO
+    </div>
+    <div class="topbar-user">
+      <span id="topbar-role-badge"></span>
+      <span id="topbar-name" style="font-size:13px;color:var(--text-md);"></span>
+      <div class="avatar" id="topbar-avatar"></div>
+      <button class="btn-ghost btn" onclick="doLogout()" style="gap:4px;"><i class="ti ti-logout" style="font-size:15px;"></i></button>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar"></nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- ── PAINEL ── -->
+      <div class="page active" id="page-painel">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Painel do dia</div>
+            <div class="page-sub" id="painel-date"></div>
+          </div>
+          <button class="btn btn-cyan" onclick="openModal('modal-novo')" id="btn-novo-atend" style="display:none;">
+            <i class="ti ti-plus"></i> Novo atendimento
+          </button>
+        </div>
+
+        <div id="reminder-area"></div>
+
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div class="section-title"><i class="ti ti-list-check" style="font-size:14px;"></i> Atendimentos de hoje</div>
+        <div id="painel-list"></div>
+      </div>
+
+      <!-- ── ATENDIMENTOS ── -->
+      <div class="page" id="page-atendimentos">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Atendimentos</div>
+            <div class="page-sub">Todos os registros</div>
+          </div>
+          <button class="btn btn-cyan" onclick="openModal('modal-novo')" id="btn-novo-lista" style="display:none;">
+            <i class="ti ti-plus"></i> Novo
+          </button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filtrar('todos',this)">Todos</button>
+          <button class="filter-btn" onclick="filtrar('pendente',this)">Pendentes</button>
+          <button class="filter-btn" onclick="filtrar('andamento',this)">Em andamento</button>
+          <button class="filter-btn" onclick="filtrar('concluido',this)">Concluídos</button>
+        </div>
+        <div id="lista-atendimentos"></div>
+      </div>
+
+      <!-- ── COBRANÇAS ── -->
+      <div class="page" id="page-cobrancas">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Cobranças</div>
+            <div class="page-sub">Pendentes e histórico</div>
+          </div>
+        </div>
+        <div id="lista-cobrancas"></div>
+      </div>
+
+      <!-- ── CLIENTES ── -->
+      <div class="page" id="page-clientes">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Clientes</div>
+            <div class="page-sub">Base de clientes cadastrados</div>
+          </div>
+          <button class="btn btn-cyan" onclick="openModal('modal-cliente')">
+            <i class="ti ti-plus"></i> Novo cliente
+          </button>
+        </div>
+        <div id="lista-clientes"></div>
+      </div>
+
+      <!-- ── EQUIPE (admin) ── -->
+      <div class="page" id="page-equipe">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Equipe</div>
+            <div class="page-sub">Usuários do sistema</div>
+          </div>
+          <button class="btn btn-cyan" onclick="openModal('modal-usuario')">
+            <i class="ti ti-user-plus"></i> Novo usuário
+          </button>
+        </div>
+        <div id="lista-equipe"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- NOVO ATENDIMENTO -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Novo atendimento</div>
+      <button class="btn btn-ghost" onclick="closeModal('modal-novo')"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Cliente *</label><input type="text" id="f-cliente" placeholder="Nome do cliente"></div>
+      <div class="field">
+        <label>Tipo de acesso *</label>
+        <select id="f-acesso">
+          <option value="">Selecione...</option>
+          <option>AnyDesk</option><option>TeamViewer</option>
+          <option>RDP</option><option>VPN</option>
+          <option>SSH</option><option>LogMeIn</option><option>Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" id="f-outro-wrap" style="display:none">
+      <label>Especifique o acesso</label>
+      <input type="text" id="f-acesso-outro" placeholder="Tipo de acesso">
+    </div>
+    <div class="field"><label>O que será feito *</label><textarea id="f-servico" placeholder="Descreva o serviço..."></textarea></div>
+    <div class="g3">
+      <div class="field">
+        <label>Técnico responsável *</label>
+        <select id="f-tecnico"></select>
+      </div>
+      <div class="field"><label>Valor (R$)</label><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01"></div>
+      <div class="field">
+        <label>Status inicial</label>
+        <select id="f-status">
+          <option value="pendente">Pendente</option>
+          <option value="andamento">Em andamento</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Observações</label><input type="text" id="f-obs" placeholder="Senha, informações extras..."></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+      <button class="btn btn-outline" onclick="closeModal('modal-novo')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarAtendimento()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Novo cliente</div>
+      <button class="btn btn-ghost" onclick="closeModal('modal-cliente')"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Nome *</label><input type="text" id="fc-nome" placeholder="Nome completo ou empresa"></div>
+      <div class="field"><label>WhatsApp</label><input type="text" id="fc-wpp" placeholder="(11) 99999-9999"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>E-mail</label><input type="email" id="fc-email" placeholder="cliente@email.com"></div>
+      <div class="field"><label>Segmento</label>
+        <select id="fc-seg">
+          <option value="">Selecione...</option>
+          <option>Arquitetura</option><option>Design de Interiores</option>
+          <option>Engenharia</option><option>Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Observações</label><input type="text" id="fc-obs" placeholder="Informações relevantes"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+      <button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarCliente()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO USUÁRIO (admin) -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Novo usuário</div>
+      <button class="btn btn-ghost" onclick="closeModal('modal-usuario')"><i class="ti ti-x" style="font-size:18px;"></i></button>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Nome *</label><input type="text" id="fu-nome" placeholder="Nome completo"></div>
+      <div class="field">
+        <label>Perfil *</label>
+        <select id="fu-perfil">
+          <option value="atendente">Atendente</option>
+          <option value="tecnico">Técnico</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>E-mail *</label><input type="email" id="fu-email" placeholder="usuario@email.com"></div>
+      <div class="field"><label>Senha inicial</label><input type="password" id="fu-senha" placeholder="Mínimo 8 caracteres"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+      <button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarUsuario()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════ STATE ═══════════════
+const DB = {
+  users: [
+    {id:1, nome:'Carlos Admin', email:'admin@tidoarquiteto.com.br', perfil:'admin', initials:'CA'},
+    {id:2, nome:'Ana Atendente', email:'atendente@tidoarquiteto.com.br', perfil:'atendente', initials:'AA'},
+    {id:3, nome:'João Técnico', email:'tecnico@tidoarquiteto.com.br', perfil:'tecnico', initials:'JT'},
+    {id:4, nome:'Pedro Técnico', email:'pedro@tidoarquiteto.com.br', perfil:'tecnico', initials:'PT'},
+  ],
+  clientes: [
+    {id:1, nome:'Studio Arq Ltda', wpp:'(11) 98765-4321', email:'contato@studioarq.com', seg:'Arquitetura', obs:''},
+    {id:2, nome:'Fernanda Lima', wpp:'(11) 91234-5678', email:'fer@gmail.com', seg:'Design de Interiores', obs:''},
+    {id:3, nome:'Construtora NBR', wpp:'(11) 94567-8901', email:'ti@nbr.com.br', seg:'Engenharia', obs:''},
+  ],
+  atendimentos: JSON.parse(localStorage.getItem('tia_ate') || '[]'),
+};
+if(!DB.atendimentos.length) {
+  const h = hoje();
+  DB.atendimentos = [
+    {id:101, cliente:'Studio Arq Ltda', acesso:'AnyDesk', servico:'Instalação do AutoCAD 2024 e configuração de licença', tecnicoId:3, tecnico:'João Técnico', valor:180, status:'concluido', obs:'Licença no e-mail do cliente', data:h, cobrado:false},
+    {id:102, cliente:'Fernanda Lima', acesso:'TeamViewer', servico:'Limpeza de sistema e atualização do Windows', tecnicoId:4, tecnico:'Pedro Técnico', valor:120, status:'andamento', obs:'', data:h, cobrado:false},
+    {id:103, cliente:'Construtora NBR', acesso:'RDP', servico:'Configuração de VPN e acesso remoto para equipe', tecnicoId:3, tecnico:'João Técnico', valor:350, status:'pendente', obs:'Aguardando confirmação do TI deles', data:h, cobrado:false},
+  ];
+  saveAte();
+}
+function saveAte() { localStorage.setItem('tia_ate',JSON.stringify(DB.atendimentos)); }
+
+let currentUser = null;
+let filtroAtual = 'todos';
+let selectedRole = 'admin';
+
+function hoje() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) { const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function initials(n) { return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+// ═══════════════ AUTH ═══════════════
+function selectRole(r, el) {
+  selectedRole = r;
+  document.querySelectorAll('.demo-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const map = {admin:'admin@tidoarquiteto.com.br', atendente:'atendente@tidoarquiteto.com.br', tecnico:'tecnico@tidoarquiteto.com.br'};
+  document.getElementById('login-email').value = map[r];
+}
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const user = DB.users.find(u=>u.email===email) || DB.users[0];
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  setupUI();
+  navigate('painel');
+}
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+  currentUser = null;
+}
+
+// ═══════════════ SETUP UI ═══════════════
+const roleBadge = {admin:'badge-admin', atendente:'badge-atendente', tecnico:'badge-tecnico'};
+const roleLabel = {admin:'Admin', atendente:'Atendente', tecnico:'Técnico'};
+
+const navConfig = {
+  admin: [
+    {id:'painel', icon:'ti-layout-dashboard', label:'Painel'},
+    {id:'atendimentos', icon:'ti-list-check', label:'Atendimentos'},
+    {id:'cobrancas', icon:'ti-receipt', label:'Cobranças'},
+    '---',
+    {id:'clientes', icon:'ti-users', label:'Clientes'},
+    {id:'equipe', icon:'ti-user-cog', label:'Equipe'},
+  ],
+  atendente: [
+    {id:'painel', icon:'ti-layout-dashboard', label:'Painel'},
+    {id:'atendimentos', icon:'ti-list-check', label:'Atendimentos'},
+    {id:'cobrancas', icon:'ti-receipt', label:'Cobranças'},
+    '---',
+    {id:'clientes', icon:'ti-users', label:'Clientes'},
+  ],
+  tecnico: [
+    {id:'painel', icon:'ti-layout-dashboard', label:'Painel'},
+    {id:'atendimentos', icon:'ti-list-check', label:'Meus chamados'},
+  ],
+};
+
+function setupUI() {
+  const u = currentUser;
+  // topbar
+  document.getElementById('topbar-name').textContent = u.nome;
+  document.getElementById('topbar-avatar').textContent = u.initials;
+  document.getElementById('topbar-role-badge').outerHTML = `<span id="topbar-role-badge" class="badge ${roleBadge[u.perfil]}">${roleLabel[u.perfil]}</span>`;
+
+  // sidebar
+  const nav = document.getElementById('sidebar');
+  nav.innerHTML = '<div class="nav-section">Menu</div>';
+  const items = navConfig[u.perfil] || navConfig.admin;
+  items.forEach(item => {
+    if(item === '---') {
+      nav.innerHTML += '<div class="divider" style="margin:6px 12px;"></div>';
+    } else {
+      nav.innerHTML += `<button class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')">
+        <i class="ti ${item.icon}"></i>${item.label}
+        ${item.id==='cobrancas'?'<span class="nav-badge" id="badge-cobr" style="display:none">0</span>':''}
+      </button>`;
+    }
+  });
+
+  // show/hide new atendimento btns
+  const canCreate = u.perfil !== 'tecnico';
+  ['btn-novo-atend','btn-novo-lista'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = canCreate ? 'inline-flex' : 'none';
+  });
+
+  // populate tecnico select
+  const sel = document.getElementById('f-tecnico');
+  if(sel) {
+    sel.innerHTML = '<option value="">Selecione...</option>' +
+      DB.users.filter(u=>u.perfil==='tecnico').map(u=>`<option value="${u.id}">${u.nome}</option>`).join('');
+  }
+}
+
+// ═══════════════ NAVIGATION ═══════════════
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  document.getElementById('nav-'+page)?.classList.add('active');
+  renderPage(page);
+}
+
+function renderPage(page) {
+  if(page==='painel') renderPainel();
+  else if(page==='atendimentos') renderLista();
+  else if(page==='cobrancas') renderCobrancas();
+  else if(page==='clientes') renderClientes();
+  else if(page==='equipe') renderEquipe();
+}
+
+// ═══════════════ CARDS ═══════════════
+function statusBadge(s) {
+  const map = {
+    pendente:`<span class="badge badge-pending">Pendente</span>`,
+    andamento:`<span class="badge badge-progress">Em andamento</span>`,
+    concluido:`<span class="badge badge-done">Concluído</span>`
+  };
+  return map[s]||'';
+}
+
+function atendimentoCard(a) {
+  const isAdmin = currentUser.perfil !== 'tecnico';
+  const cobTag = a.cobrado
+    ? `<span class="badge badge-cobrado">Cobrado</span>`
+    : (a.status==='concluido' ? `<span class="badge badge-cobrar">A cobrar</span>` : '');
+  const val = a.valor > 0
+    ? `<span class="card-valor">R$ ${a.valor.toFixed(2).replace('.',',')}</span>`
+    : `<span style="font-size:12px;color:var(--text-lo);">Sem valor</span>`;
+
+  let actions = '';
+  if(a.status!=='concluido') {
+    const nxt = a.status==='pendente' ? 'andamento' : 'concluido';
+    const lbl = a.status==='pendente' ? 'Iniciar' : 'Concluir';
+    const ico = a.status==='pendente' ? 'ti-player-play' : 'ti-check';
+    actions += `<button class="btn btn-sm btn-green" onclick="mudarStatus(${a.id},'${nxt}')"><i class="ti ${ico}"></i> ${lbl}</button>`;
+  }
+  if(a.status==='andamento') {
+    actions += `<button class="btn btn-sm btn-outline" onclick="mudarStatus(${a.id},'pendente')"><i class="ti ti-rotate-left"></i> Reverter</button>`;
+  }
+  if(a.status==='concluido' && !a.cobrado && isAdmin) {
+    actions += `<button class="btn btn-sm btn-cyan" onclick="marcarCobrado(${a.id})"><i class="ti ti-currency-dollar"></i> Marcar cobrado</button>`;
+  }
+  if(isAdmin) {
+    actions += `<button class="btn btn-sm btn-danger" onclick="excluir(${a.id})" style="margin-left:auto;"><i class="ti ti-trash"></i></button>`;
+  }
+
+  return `<div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-client"><i class="ti ti-user-circle" style="font-size:14px;margin-right:5px;color:var(--cyan);"></i>${a.cliente}</div>
+        <div class="card-meta">
+          <span><i class="ti ti-wifi"></i>${a.acesso}</span>
+          <span><i class="ti ti-user-cog"></i>${a.tecnico}</span>
+          <span><i class="ti ti-calendar"></i>${fmtDate(a.data)}</span>
+        </div>
+      </div>
+      <div class="card-right">${statusBadge(a.status)} ${cobTag} ${val}</div>
+    </div>
+    <div class="card-service">${a.servico}</div>
+    ${a.obs ? `<div class="card-obs"><i class="ti ti-notes" style="font-size:12px;"></i> ${a.obs}</div>` : ''}
+    <div class="card-actions">${actions}</div>
+  </div>`;
+}
+
+// ═══════════════ PAINEL ═══════════════
+function renderPainel() {
+  const h = hoje();
+  document.getElementById('painel-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  let ates = DB.atendimentos.filter(a=>a.data===h);
+  if(currentUser.perfil==='tecnico') ates = ates.filter(a=>a.tecnicoId===currentUser.id);
+
+  const acobrar = ates.filter(a=>a.status==='concluido'&&!a.cobrado);
+  const totalCobrar = acobrar.reduce((s,a)=>s+a.valor,0);
+
+  // reminder
+  const ra = document.getElementById('reminder-area');
+  ra.innerHTML = acobrar.length && currentUser.perfil!=='tecnico'
+    ? `<div class="reminder"><i class="ti ti-bell"></i><div class="reminder-text"><strong>${acobrar.length} atendimento(s)</strong> concluído(s) aguardando cobrança — total R$ ${totalCobrar.toFixed(2).replace('.',',')}</div></div>`
+    : '';
+
+  // badge cobranças
+  const bc = document.getElementById('badge-cobr');
+  if(bc) { bc.textContent = acobrar.length; bc.style.display = acobrar.length ? 'inline-block' : 'none'; }
+
+  // stats
+  const sg = document.getElementById('stats-grid');
+  if(currentUser.perfil==='tecnico') {
+    sg.innerHTML = `
+      <div class="stat-card" style="--accent:var(--cyan)"><div class="stat-label">Meus chamados hoje</div><div class="stat-val">${ates.length}</div><i class="ti ti-list stat-icon"></i></div>
+      <div class="stat-card" style="--accent:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${ates.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
+      <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${ates.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
+      <div class="stat-card" style="--accent:#5ab4ff"><div class="stat-label">Pendentes</div><div class="stat-val">${ates.filter(a=>a.status==='pendente').length}</div><i class="ti ti-clock stat-icon"></i></div>`;
+  } else {
+    sg.innerHTML = `
+      <div class="stat-card" style="--accent:var(--cyan)"><div class="stat-label">Atendimentos hoje</div><div class="stat-val">${ates.length}</div><i class="ti ti-list stat-icon"></i></div>
+      <div class="stat-card" style="--accent:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${ates.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
+      <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${ates.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
+      <div class="stat-card" style="--accent:var(--red)"><div class="stat-label">A cobrar</div><div class="stat-val">R$ ${totalCobrar.toFixed(0)}</div><i class="ti ti-currency-dollar stat-icon"></i></div>`;
+  }
+
+  const pl = document.getElementById('painel-list');
+  if(!ates.length) { pl.innerHTML='<div class="empty"><i class="ti ti-calendar"></i>Nenhum atendimento hoje</div>'; return; }
+  pl.innerHTML = ates.map(a=>atendimentoCard(a)).join('');
+}
+
+// ═══════════════ LISTA ═══════════════
+function renderLista() {
+  let all = filtroAtual==='todos' ? DB.atendimentos : DB.atendimentos.filter(a=>a.status===filtroAtual);
+  if(currentUser.perfil==='tecnico') all = all.filter(a=>a.tecnicoId===currentUser.id);
+  const el = document.getElementById('lista-atendimentos');
+  if(!all.length) { el.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Nenhum atendimento encontrado</div>'; return; }
+  el.innerHTML = all.map(a=>atendimentoCard(a)).join('');
+}
+
+function filtrar(f, btn) {
+  filtroAtual = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLista();
+}
+
+// ═══════════════ COBRANÇAS ═══════════════
+function renderCobrancas() {
+  const pendentes = DB.atendimentos.filter(a=>a.status==='concluido'&&!a.cobrado);
+  const cobrados = DB.atendimentos.filter(a=>a.cobrado).slice(0,10);
+  const el = document.getElementById('lista-cobrancas');
+  let html = '';
+  if(pendentes.length) {
+    const total = pendentes.reduce((s,a)=>s+a.valor,0);
+    html += `<div class="reminder" style="margin-bottom:1rem;"><i class="ti ti-alert-circle"></i><div class="reminder-text"><strong>${pendentes.length} pendente(s)</strong> — R$ ${total.toFixed(2).replace('.',',')} a receber</div></div>`;
+    html += `<div class="section-title"><i class="ti ti-clock" style="font-size:14px;"></i> Aguardando cobrança</div>`;
+    html += pendentes.map(a=>atendimentoCard(a)).join('');
+  }
+  if(cobrados.length) {
+    html += `<div class="glow-line"></div><div class="section-title"><i class="ti ti-check" style="font-size:14px;"></i> Já cobrados</div>`;
+    html += cobrados.map(a=>atendimentoCard(a)).join('');
+  }
+  if(!html) html = '<div class="empty"><i class="ti ti-check"></i>Tudo cobrado!</div>';
+  el.innerHTML = html;
+}
+
+// ═══════════════ CLIENTES ═══════════════
+function renderClientes() {
+  const el = document.getElementById('lista-clientes');
+  if(!DB.clientes.length) { el.innerHTML='<div class="empty"><i class="ti ti-users"></i>Nenhum cliente cadastrado</div>'; return; }
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
+    <table class="tbl">
+      <thead><tr>
+        <th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Segmento</th><th></th>
+      </tr></thead>
+      <tbody>${DB.clientes.map(c=>`<tr>
+        <td style="color:var(--text-hi);font-weight:600;">${c.nome}</td>
+        <td>${c.wpp||'—'}</td><td>${c.email||'—'}</td>
+        <td>${c.seg ? `<span class="badge badge-atendente">${c.seg}</span>` : '—'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="excluirCliente(${c.id})"><i class="ti ti-trash"></i></button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════ EQUIPE ═══════════════
+function renderEquipe() {
+  const el = document.getElementById('lista-equipe');
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
+    <table class="tbl">
+      <thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th></th></tr></thead>
+      <tbody>${DB.users.map(u=>`<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar" style="width:28px;height:28px;font-size:11px;">${u.initials}</div>
+            <span style="color:var(--text-hi);font-weight:600;">${u.nome}</span>
+          </div>
+        </td>
+        <td>${u.email}</td>
+        <td><span class="badge badge-${u.perfil}">${roleLabel[u.perfil]}</span></td>
+        <td>${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="excluirUsuario(${u.id})"><i class="ti ti-trash"></i></button>`:''}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════ ACTIONS ═══════════════
+function mudarStatus(id, novo) {
+  const a = DB.atendimentos.find(x=>x.id===id);
+  if(a) { a.status=novo; saveAte(); renderAll(); }
+}
+function marcarCobrado(id) {
+  const a = DB.atendimentos.find(x=>x.id===id);
+  if(a) { a.cobrado=true; saveAte(); renderAll(); }
+}
+function excluir(id) {
+  if(!confirm('Excluir este atendimento?')) return;
+  DB.atendimentos = DB.atendimentos.filter(x=>x.id!==id); saveAte(); renderAll();
+}
+function excluirCliente(id) {
+  if(!confirm('Excluir cliente?')) return;
+  DB.clientes = DB.clientes.filter(x=>x.id!==id); renderClientes();
+}
+function excluirUsuario(id) {
+  if(!confirm('Remover usuário?')) return;
+  DB.users = DB.users.filter(x=>x.id!==id); renderEquipe();
+}
+
+function renderAll() {
+  const active = document.querySelector('.page.active')?.id?.replace('page-','');
+  if(active) renderPage(active);
+}
+
+// ═══════════════ SAVE ═══════════════
+function salvarAtendimento() {
+  const c = document.getElementById('f-cliente').value.trim();
+  const a = document.getElementById('f-acesso').value;
+  const ao = document.getElementById('f-acesso-outro').value.trim();
+  const s = document.getElementById('f-servico').value.trim();
+  const tid = parseInt(document.getElementById('f-tecnico').value);
+  if(!c||!a||!s||!tid) { alert('Preencha os campos obrigatórios (*)'); return; }
+  const tec = DB.users.find(u=>u.id===tid);
+  DB.atendimentos.unshift({
+    id: Date.now(), cliente:c, acesso: a==='Outro'?ao||a:a,
+    servico:s, tecnicoId:tid, tecnico:tec?.nome||'',
+    valor:parseFloat(document.getElementById('f-valor').value)||0,
+    status:document.getElementById('f-status').value,
+    obs:document.getElementById('f-obs').value.trim(),
+    data:hoje(), cobrado:false
+  });
+  saveAte();
+  closeModal('modal-novo');
+  ['f-cliente','f-acesso','f-acesso-outro','f-servico','f-tecnico','f-valor','f-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+  });
+  document.getElementById('f-status').selectedIndex=0;
+  document.getElementById('f-outro-wrap').style.display='none';
+  renderAll();
+}
+
+function salvarCliente() {
+  const n = document.getElementById('fc-nome').value.trim();
+  if(!n) { alert('Informe o nome'); return; }
+  DB.clientes.push({
+    id:Date.now(), nome:n,
+    wpp:document.getElementById('fc-wpp').value.trim(),
+    email:document.getElementById('fc-email').value.trim(),
+    seg:document.getElementById('fc-seg').value,
+    obs:document.getElementById('fc-obs').value.trim()
+  });
+  closeModal('modal-cliente');
+  ['fc-nome','fc-wpp','fc-email','fc-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fc-seg').selectedIndex=0;
+  renderClientes();
+}
+
+function salvarUsuario() {
+  const n=document.getElementById('fu-nome').value.trim();
+  const e=document.getElementById('fu-email').value.trim();
+  const p=document.getElementById('fu-perfil').value;
+  if(!n||!e) { alert('Preencha nome e e-mail'); return; }
+  DB.users.push({id:Date.now(), nome:n, email:e, perfil:p, initials:initials(n)});
+  closeModal('modal-usuario');
+  ['fu-nome','fu-email','fu-senha'].forEach(id=>document.getElementById(id).value='');
+  renderEquipe();
+}
+
+// ═══════════════ MODAL ═══════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+document.getElementById('f-acesso').addEventListener('change', function(){
+  document.getElementById('f-outro-wrap').style.display = this.value==='Outro' ? 'block' : 'none';
+});
+</script>
+</body>
+</html>
