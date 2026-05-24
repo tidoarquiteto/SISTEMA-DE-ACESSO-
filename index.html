@@ -201,6 +201,19 @@
   </div>
 </div>
 
+<!-- RESET DE SENHA -->
+<div id="reset-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+  <div class="login-box">
+    <div class="login-logo">T.I DO ARQUITETO</div>
+    <div class="login-sub">Definir nova senha</div>
+    <div class="login-error" id="reset-error"></div>
+    <div class="field"><label>Nova senha</label><input type="password" id="reset-pass" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pass2" placeholder="Repita a senha"></div>
+    <button class="btn btn-cyan btn-full" id="btn-reset" onclick="doReset()"><i class="ti ti-lock"></i> Salvar nova senha</button>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <div class="topbar">
@@ -435,10 +448,43 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Verifica sessão ao carregar
+// Verifica sessão ao carregar — detecta token de recuperação de senha
 sb.auth.getSession().then(async ({ data: { session } }) => {
   if(session) await loadSession(session.user);
 });
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(event === "PASSWORD_RECOVERY") {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("reset-screen").style.display = "flex";
+  }
+  if(event === "SIGNED_IN" && session) {
+    const isReset = window.location.hash.includes("type=recovery");
+    if(!isReset) await loadSession(session.user);
+  }
+});
+
+async function doReset() {
+  const p1 = document.getElementById("reset-pass").value;
+  const p2 = document.getElementById("reset-pass2").value;
+  const err = document.getElementById("reset-error");
+  const btn = document.getElementById("btn-reset");
+  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; err.style.display="block"; return; }
+  if(p1 !== p2) { err.textContent="As senhas não coincidem"; err.style.display="block"; return; }
+  btn.disabled = true;
+  btn.innerHTML = "Salvando...";
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  if(error) {
+    err.textContent = "Erro: " + error.message;
+    err.style.display = "block";
+    btn.disabled = false;
+    btn.innerHTML = "Salvar nova senha";
+    return;
+  }
+  document.getElementById("reset-screen").style.display = "none";
+  const { data: { session: s } } = await sb.auth.getSession();
+  if(s) await loadSession(s.user);
+}
 
 // ══════════════════════════════════
 // SETUP UI
