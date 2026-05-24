@@ -448,19 +448,31 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Verifica sessão ao carregar — detecta token de recuperação de senha
-sb.auth.getSession().then(async ({ data: { session } }) => {
-  if(session) await loadSession(session.user);
-});
+// Detecta link de recuperacao de senha pelo hash da URL
+const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+const isRecovery = hashParams.get('type') === 'recovery';
+
+if(isRecovery) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('reset-screen').style.display = 'flex';
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  if(accessToken) {
+    sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' });
+  }
+} else {
+  sb.auth.getSession().then(async ({ data: { session } }) => {
+    if(session) await loadSession(session.user);
+  });
+}
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  if(event === "PASSWORD_RECOVERY") {
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("reset-screen").style.display = "flex";
+  if(event === 'PASSWORD_RECOVERY') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('reset-screen').style.display = 'flex';
   }
-  if(event === "SIGNED_IN" && session) {
-    const isReset = window.location.hash.includes("type=recovery");
-    if(!isReset) await loadSession(session.user);
+  if(event === 'SIGNED_IN' && session && !isRecovery) {
+    await loadSession(session.user);
   }
 });
 
