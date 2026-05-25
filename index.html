@@ -196,9 +196,9 @@
     <div class="login-error" id="login-error"></div>
     <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com.br"></div>
     <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn btn-cyan btn-full" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Entrar com senha</button>
-    <button class="btn btn-outline btn-full" id="btn-magic" onclick="doMagicLink()" style="margin-top:8px;justify-content:center;"><i class="ti ti-mail"></i> Entrar sem senha (link por e-mail)</button>
-    <div id="magic-msg" style="display:none;text-align:center;margin-top:10px;font-size:12px;color:#00e5ff;">Link enviado! Verifique seu e-mail.</div>
+    <button class="btn btn-cyan btn-full" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
+    <button class="btn btn-outline btn-full" id="btn-magic" onclick="doMagicLink()" style="margin-top:8px;justify-content:center;"><i class="ti ti-mail"></i> Entrar sem senha</button>
+    <div id="magic-msg" style="display:none;text-align:center;margin-top:10px;font-size:12px;color:var(--cyan);">Link enviado! Verifique seu e-mail.</div>
     <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-lo);">Powered by Supabase Auth</div>
   </div>
 </div>
@@ -386,8 +386,7 @@ const sb = createClient(SUPA_URL, SUPA_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'implicit'
+    detectSessionInUrl: true
   }
 });
 
@@ -438,26 +437,17 @@ function showError(msg) {
 
 async function loadSession(user) {
   currentUser = user;
-  
-  // Sempre usa perfil admin como fallback
-  currentProfile = { id: user.id, nome: user.email.split('@')[0], perfil: 'admin', ativo: true };
-  
+  currentProfile = { id: user.id, nome: (user.email||'admin').split('@')[0], perfil: 'admin', ativo: true };
   try {
-    const { data: profile, error: profileError } = await sb.from('profiles').select('*').eq('id', user.id).single();
-    if(profile && !profileError) {
-      currentProfile = profile;
-    }
-  } catch(e) {
-    console.log('Perfil nao carregado, usando admin padrao');
-  }
-  
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    if(profile) currentProfile = profile;
+  } catch(e) { console.log('perfil fallback admin'); }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('reset-screen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
-  
-  try { setupUI(); } catch(e) { console.error('setupUI error:', e); }
-  try { await loadTecnicos(); } catch(e) { console.error('loadTecnicos error:', e); }
-  try { navigate('painel'); } catch(e) { console.error('navigate error:', e); }
+  try { setupUI(); } catch(e) { console.error('setupUI:', e); }
+  try { await loadTecnicos(); } catch(e) { console.error('loadTecnicos:', e); }
+  try { navigate('painel'); } catch(e) { console.error('navigate:', e); }
 }
 
 async function doMagicLink() {
@@ -465,16 +455,13 @@ async function doMagicLink() {
   if(!email) { showError('Digite seu e-mail primeiro.'); return; }
   const btn = document.getElementById('btn-magic');
   btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite;"></i> Enviando...';
-  const { error } = await sb.auth.signInWithOtp({ 
-    email,
-    options: { shouldCreateUser: false }
-  });
-  if(error) { 
-    showError('Erro: ' + error.message); 
+  btn.innerHTML = 'Enviando...';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+  if(error) {
+    showError('Erro: ' + error.message);
     btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-mail"></i> Entrar sem senha (link por e-mail)';
-    return; 
+    btn.innerHTML = '<i class="ti ti-mail"></i> Entrar sem senha';
+    return;
   }
   document.getElementById('magic-msg').style.display = 'block';
   btn.innerHTML = '<i class="ti ti-check"></i> Link enviado!';
@@ -490,23 +477,18 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Auth state handler
+// Auth handler - detectSessionInUrl processa tokens automaticamente
 let resetMode = false;
-let _savedPassword = '';
 
 const _hash = new URLSearchParams(window.location.hash.replace('#',''));
 const _tipo = _hash.get('type');
-const _accessToken = _hash.get('access_token');
-const _refreshToken = _hash.get('refresh_token') || '';
 const _errorCode = _hash.get('error_code');
 
-// Se tem erro no hash, limpa e mostra login
 if(_errorCode) {
-  window.location.hash = '';
+  history.replaceState(null, '', window.location.pathname);
 }
 
-// Se e invite ou recovery, mostra tela de senha
-if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
+if(_tipo === 'recovery' || _tipo === 'invite') {
   resetMode = true;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('reset-screen').style.display = 'flex';
@@ -515,22 +497,17 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   }
 }
 
-// Listener principal de auth
 sb.auth.onAuthStateChange(async (event, session) => {
-  console.log('EVENT:', event, '| SESSION:', session ? 'SIM' : 'NAO');
-  
-  if(event === 'SIGNED_IN' && session) {
-    if(resetMode) return; // aguarda definir senha
-    window.location.hash = '';
+  console.log('AUTH:', event, session ? 'COM SESSAO' : 'SEM');
+  if(event === 'SIGNED_IN' && session && !resetMode) {
+    history.replaceState(null, '', window.location.pathname);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('reset-screen').style.display = 'none';
     await loadSession(session.user);
   }
-  
   if(event === 'INITIAL_SESSION' && session && !resetMode) {
     await loadSession(session.user);
   }
-  
   if(event === 'SIGNED_OUT') {
     currentUser = null;
     currentProfile = null;
@@ -549,43 +526,19 @@ async function doReset() {
   if(p1 !== p2) { err.textContent="As senhas nao coincidem"; err.style.display="block"; return; }
   btn.disabled = true;
   btn.innerHTML = "Salvando...";
-
-  // Salva a senha e usa setSession para estabelecer sessao
-  _savedPassword = p1;
-  
-  const { data: sd } = await sb.auth.getSession();
-  if(sd.session) {
-    // Sessao ja existe, atualiza direto
-    const { error } = await sb.auth.updateUser({ password: p1 });
-    if(error) {
-      err.textContent = "Erro: " + error.message;
-      err.style.display = "block";
-      btn.disabled = false;
-      btn.innerHTML = "Salvar nova senha";
-      _savedPassword = '';
-      return;
-    }
-    resetMode = false;
-    _savedPassword = '';
-    document.getElementById("reset-screen").style.display = "none";
-    const { data: sd2 } = await sb.auth.getSession();
-    if(sd2.session) await loadSession(sd2.session.user);
-    else {
-      document.getElementById("login-screen").style.display = "flex";
-      document.getElementById("login-email").value = "willian@tidoarquiteto.com.br";
-      toast("Senha salva! Faca o login.");
-    }
-  } else if(_accessToken) {
-    // Estabelece sessao com o token - o onAuthStateChange vai salvar a senha
-    toast("Estabelecendo sessao...");
-    await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken });
-  } else {
-    err.textContent = "Sessao expirada. Solicite novo link.";
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  if(error) {
+    err.textContent = "Erro: " + error.message;
     err.style.display = "block";
     btn.disabled = false;
     btn.innerHTML = "Salvar nova senha";
-    _savedPassword = '';
+    return;
   }
+  resetMode = false;
+  history.replaceState(null, '', window.location.pathname);
+  document.getElementById("reset-screen").style.display = "none";
+  toast("Senha criada com sucesso!");
+  if(data && data.user) await loadSession(data.user);
 }
 
 // ══════════════════════════════════
