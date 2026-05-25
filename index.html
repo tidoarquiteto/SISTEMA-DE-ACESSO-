@@ -454,29 +454,32 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Detecta link de recuperacao de senha pelo hash da URL
-const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-const tokenType = hashParams.get('type');
-const isRecovery = tokenType === 'recovery';
-const isInvite = tokenType === 'invite';
-const needsPassword = isRecovery || isInvite;
+// Auth state handler - detectSessionInUrl cuida do token automaticamente
+let resetMode = false;
 
-if(needsPassword) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('reset-screen').style.display = 'flex';
-  if(isInvite) {
-    document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
+sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('Auth event:', event);
+  
+  if(event === 'INITIAL_SESSION') {
+    const hash = new URLSearchParams(window.location.hash.replace('#',''));
+    const tipo = hash.get('type');
+    if(tipo === 'recovery' || tipo === 'invite') {
+      resetMode = true;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('reset-screen').style.display = 'flex';
+      if(tipo === 'invite') {
+        document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
+      }
+    } else if(session) {
+      await loadSession(session.user);
+    }
   }
-  const accessToken = hashParams.get('access_token');
-  const refreshToken = hashParams.get('refresh_token') || '';
-  if(accessToken) {
-    sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-      .then(({ data, error }) => {
-        if(error) {
-          document.getElementById('reset-error').textContent = 'Erro de sessão: ' + error.message;
-          document.getElementById('reset-error').style.display = 'block';
-        }
-      });
+  
+  if(event === 'SIGNED_IN' && session && !resetMode) {
+    document.getElementById('login-screen').style.display = 'none';
+    await loadSession(session.user);
+  }
+});
   }
 } else {
   sb.auth.getSession().then(async ({ data: { session } }) => {
@@ -499,55 +502,28 @@ async function doReset() {
   const p2 = document.getElementById("reset-pass2").value;
   const err = document.getElementById("reset-error");
   const btn = document.getElementById("btn-reset");
-  err.style.display = "block";
-  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; return; }
-  if(p1 !== p2) { err.textContent="As senhas nao coincidem"; return; }
   err.style.display = "none";
+  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; err.style.display="block"; return; }
+  if(p1 !== p2) { err.textContent="As senhas nao coincidem"; err.style.display="block"; return; }
   btn.disabled = true;
   btn.innerHTML = "Salvando...";
 
-  // Garante sessao ativa antes de atualizar
-  const { data: sessionData } = await sb.auth.getSession();
-  if(!sessionData.session) {
-    // Tenta restaurar sessao do hash
-    const hash = new URLSearchParams(window.location.hash.replace('#',''));
-    const at = hash.get('access_token');
-    const rt = hash.get('refresh_token') || '';
-    if(at) {
-      await sb.auth.setSession({ access_token: at, refresh_token: rt });
-    } else {
-      err.textContent = "Sessao expirada. Solicite novo link.";
-      err.style.display = "block";
-      btn.disabled = false;
-      btn.innerHTML = "Salvar nova senha";
-      return;
-    }
-  }
-
   const { error } = await sb.auth.updateUser({ password: p1 });
+  
   if(error) {
-    err.textContent = "Erro: " + error.message;
+    err.textContent = "Erro ao salvar: " + error.message;
     err.style.display = "block";
     btn.disabled = false;
     btn.innerHTML = "Salvar nova senha";
     return;
   }
 
-  toast("Senha definida! Fazendo login...");
-  setTimeout(async () => {
-    const { data } = await sb.auth.signInWithPassword({ 
-      email: document.getElementById("login-email").value || "willian@tidoarquiteto.com.br", 
-      password: p1 
-    });
-    if(data.user) {
-      document.getElementById("reset-screen").style.display = "none";
-      await loadSession(data.user);
-    } else {
-      document.getElementById("reset-screen").style.display = "none";
-      document.getElementById("login-screen").style.display = "flex";
-      toast("Senha salva! Faca login agora.");
-    }
-  }, 1000);
+  // Senha salva! Agora faz login com a nova senha
+  resetMode = false;
+  document.getElementById("reset-screen").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("login-email").value = "willian@tidoarquiteto.com.br";
+  toast("Senha criada com sucesso! Faca o login agora.");
 }
 
 // ══════════════════════════════════
