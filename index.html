@@ -435,9 +435,24 @@ function showError(msg) {
 
 async function loadSession(user) {
   currentUser = user;
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  currentProfile = profile;
+  const { data: profile, error: profileError } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  
+  if(profileError || !profile) {
+    // Perfil nao encontrado - cria automaticamente como admin
+    const { error: insertError } = await sb.from('profiles').insert({
+      id: user.id,
+      nome: user.email.split('@')[0],
+      perfil: 'admin',
+      ativo: true
+    });
+    const { data: newProfile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    currentProfile = newProfile || { id: user.id, nome: 'Admin', perfil: 'admin', ativo: true };
+  } else {
+    currentProfile = profile;
+  }
+  
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('reset-screen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   setupUI();
   await loadTecnicos();
