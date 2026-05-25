@@ -454,29 +454,30 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// // Auth state handler
+// Auth state handler
 let resetMode = false;
 
-sb.auth.onAuthStateChange(async (event, session) => {
-  console.log('Auth event:', event);
-  
-  if(event === 'INITIAL_SESSION') {
-    const hash = new URLSearchParams(window.location.hash.replace('#',''));
-    const tipo = hash.get('type');
-    if(tipo === 'recovery' || tipo === 'invite') {
-      resetMode = true;
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('reset-screen').style.display = 'flex';
-      if(tipo === 'invite') {
-        document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
-      }
-    } else if(session) {
-      await loadSession(session.user);
-    }
+// Verifica o hash da URL imediatamente
+const _hash = new URLSearchParams(window.location.hash.replace('#',''));
+const _tipo = _hash.get('type');
+const _accessToken = _hash.get('access_token');
+
+if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
+  resetMode = true;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('reset-screen').style.display = 'flex';
+  if(_tipo === 'invite') {
+    document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
   }
-  
+}
+
+sb.auth.onAuthStateChange(async (event, session) => {
   if(event === 'SIGNED_IN' && session && !resetMode) {
     document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('reset-screen').style.display = 'none';
+    await loadSession(session.user);
+  }
+  if(event === 'INITIAL_SESSION' && session && !resetMode) {
     await loadSession(session.user);
   }
 });
