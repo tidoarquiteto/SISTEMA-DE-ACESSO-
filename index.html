@@ -494,12 +494,18 @@ async function doLogout() {
 let resetMode = false;
 let _savedPassword = '';
 
-// Detecta tipo do link pelo hash
 const _hash = new URLSearchParams(window.location.hash.replace('#',''));
 const _tipo = _hash.get('type');
 const _accessToken = _hash.get('access_token');
 const _refreshToken = _hash.get('refresh_token') || '';
+const _errorCode = _hash.get('error_code');
 
+// Se tem erro no hash, limpa e mostra login
+if(_errorCode) {
+  window.location.hash = '';
+}
+
+// Se e invite ou recovery, mostra tela de senha
 if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   resetMode = true;
   document.getElementById('login-screen').style.display = 'none';
@@ -509,29 +515,25 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   }
 }
 
-// Magic link ou qualquer token valido - faz login direto
-if(_accessToken && (_tipo === 'magiclink' || _tipo === 'email' || _tipo === 'signup' || _tipo === 'recovery' || _tipo === 'invite')) {
-  sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken })
-    .then(async ({ data, error }) => {
-      if(data?.session && !resetMode) {
-        window.location.hash = '';
-        await loadSession(data.session.user);
-      }
-    });
-}
-
-// Verifica sessao existente ao carregar
-sb.auth.getSession().then(async ({ data: { session } }) => {
-  if(session && !resetMode) {
-    await loadSession(session.user);
-  }
-});
-
+// Listener principal de auth
 sb.auth.onAuthStateChange(async (event, session) => {
-  if(event === 'SIGNED_IN' && session && !resetMode) {
+  console.log('EVENT:', event, '| SESSION:', session ? 'SIM' : 'NAO');
+  
+  if(event === 'SIGNED_IN' && session) {
+    if(resetMode) return; // aguarda definir senha
+    window.location.hash = '';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('reset-screen').style.display = 'none';
     await loadSession(session.user);
   }
+  
+  if(event === 'INITIAL_SESSION' && session && !resetMode) {
+    await loadSession(session.user);
+  }
+  
   if(event === 'SIGNED_OUT') {
+    currentUser = null;
+    currentProfile = null;
     document.getElementById('app').classList.remove('visible');
     document.getElementById('login-screen').style.display = 'flex';
   }
