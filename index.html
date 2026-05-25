@@ -488,6 +488,9 @@ if(_errorCode) {
   history.replaceState(null, '', window.location.pathname);
 }
 
+const _accessToken = _hash.get('access_token');
+const _refreshToken = _hash.get('refresh_token') || '';
+
 if(_tipo === 'recovery' || _tipo === 'invite') {
   resetMode = true;
   document.getElementById('login-screen').style.display = 'none';
@@ -505,9 +508,6 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('reset-screen').style.display = 'none';
     await loadSession(session.user);
   }
-  if(event === 'INITIAL_SESSION' && session && !resetMode) {
-    await loadSession(session.user);
-  }
   if(event === 'SIGNED_OUT') {
     currentUser = null;
     currentProfile = null;
@@ -515,6 +515,45 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('login-screen').style.display = 'flex';
   }
 });
+
+// Processa token do link manualmente
+async function processarToken() {
+  // Verifica sessao existente primeiro
+  const { data: { session: existing } } = await sb.auth.getSession();
+  if(existing && !resetMode) {
+    await loadSession(existing.user);
+    return;
+  }
+  // Se tem token no hash, estabelece a sessao
+  if(_accessToken) {
+    console.log('Processando token tipo:', _tipo);
+    const { data, error } = await sb.auth.setSession({
+      access_token: _accessToken,
+      refresh_token: _refreshToken
+    });
+    if(error) {
+      console.error('Erro setSession:', error.message);
+      if(resetMode) {
+        document.getElementById('reset-error').textContent = 'Erro: ' + error.message;
+        document.getElementById('reset-error').style.display = 'block';
+      }
+      return;
+    }
+    if(data.session) {
+      console.log('Sessao estabelecida!');
+      if(resetMode) {
+        // invite/recovery: aguarda usuario definir senha (ja esta na tela certa)
+        console.log('Aguardando definir senha');
+      } else {
+        // magiclink: entra direto
+        history.replaceState(null, '', window.location.pathname);
+        document.getElementById('login-screen').style.display = 'none';
+        await loadSession(data.session.user);
+      }
+    }
+  }
+}
+processarToken();
 
 async function doReset() {
   const p1 = document.getElementById("reset-pass").value;
