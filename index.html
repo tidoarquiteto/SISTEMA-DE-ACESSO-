@@ -196,7 +196,9 @@
     <div class="login-error" id="login-error"></div>
     <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com.br"></div>
     <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn btn-cyan btn-full" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
+    <button class="btn btn-cyan btn-full" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Entrar com senha</button>
+    <button class="btn btn-outline btn-full" id="btn-magic" onclick="doMagicLink()" style="margin-top:8px;justify-content:center;"><i class="ti ti-mail"></i> Entrar sem senha (link por e-mail)</button>
+    <div id="magic-msg" style="display:none;text-align:center;margin-top:10px;font-size:12px;color:#00e5ff;">Link enviado! Verifique seu e-mail.</div>
     <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-lo);">Powered by Supabase Auth</div>
   </div>
 </div>
@@ -455,6 +457,26 @@ async function loadSession(user) {
   try { setupUI(); } catch(e) { console.error('setupUI error:', e); }
   try { await loadTecnicos(); } catch(e) { console.error('loadTecnicos error:', e); }
   try { navigate('painel'); } catch(e) { console.error('navigate error:', e); }
+}
+
+async function doMagicLink() {
+  const email = document.getElementById('login-email').value.trim();
+  if(!email) { showError('Digite seu e-mail primeiro.'); return; }
+  const btn = document.getElementById('btn-magic');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite;"></i> Enviando...';
+  const { error } = await sb.auth.signInWithOtp({ 
+    email,
+    options: { shouldCreateUser: false }
+  });
+  if(error) { 
+    showError('Erro: ' + error.message); 
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-mail"></i> Entrar sem senha (link por e-mail)';
+    return; 
+  }
+  document.getElementById('magic-msg').style.display = 'block';
+  btn.innerHTML = '<i class="ti ti-check"></i> Link enviado!';
 }
 
 async function doLogout() {
