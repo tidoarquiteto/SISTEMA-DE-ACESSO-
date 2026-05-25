@@ -456,11 +456,13 @@ async function doLogout() {
 
 // Auth state handler
 let resetMode = false;
+let _savedPassword = '';
 
-// Verifica o hash da URL imediatamente
+// Detecta tipo do link pelo hash
 const _hash = new URLSearchParams(window.location.hash.replace('#',''));
 const _tipo = _hash.get('type');
 const _accessToken = _hash.get('access_token');
+const _refreshToken = _hash.get('refresh_token') || '';
 
 if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   resetMode = true;
@@ -472,6 +474,19 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
+  if(event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && resetMode)) {
+    // Sessao estabelecida via link - agora pode salvar senha
+    if(_savedPassword) {
+      const { error } = await sb.auth.updateUser({ password: _savedPassword });
+      if(!error) {
+        resetMode = false;
+        _savedPassword = '';
+        document.getElementById('reset-screen').style.display = 'none';
+        await loadSession(session.user);
+        toast('Senha definida com sucesso!');
+      }
+    }
+  }
   if(event === 'SIGNED_IN' && session && !resetMode) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('reset-screen').style.display = 'none';
@@ -492,22 +507,42 @@ async function doReset() {
   btn.disabled = true;
   btn.innerHTML = "Salvando...";
 
-  const { error } = await sb.auth.updateUser({ password: p1 });
+  // Salva a senha e usa setSession para estabelecer sessao
+  _savedPassword = p1;
   
-  if(error) {
-    err.textContent = "Erro ao salvar: " + error.message;
+  const { data: sd } = await sb.auth.getSession();
+  if(sd.session) {
+    // Sessao ja existe, atualiza direto
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if(error) {
+      err.textContent = "Erro: " + error.message;
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = "Salvar nova senha";
+      _savedPassword = '';
+      return;
+    }
+    resetMode = false;
+    _savedPassword = '';
+    document.getElementById("reset-screen").style.display = "none";
+    const { data: sd2 } = await sb.auth.getSession();
+    if(sd2.session) await loadSession(sd2.session.user);
+    else {
+      document.getElementById("login-screen").style.display = "flex";
+      document.getElementById("login-email").value = "willian@tidoarquiteto.com.br";
+      toast("Senha salva! Faca o login.");
+    }
+  } else if(_accessToken) {
+    // Estabelece sessao com o token - o onAuthStateChange vai salvar a senha
+    toast("Estabelecendo sessao...");
+    await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken });
+  } else {
+    err.textContent = "Sessao expirada. Solicite novo link.";
     err.style.display = "block";
     btn.disabled = false;
     btn.innerHTML = "Salvar nova senha";
-    return;
+    _savedPassword = '';
   }
-
-  // Senha salva! Agora faz login com a nova senha
-  resetMode = false;
-  document.getElementById("reset-screen").style.display = "none";
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("login-email").value = "willian@tidoarquiteto.com.br";
-  toast("Senha criada com sucesso! Faca o login agora.");
 }
 
 // ══════════════════════════════════
