@@ -454,7 +454,7 @@ async function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Auth state handler - detectSessionInUrl cuida do token automaticamente
+// // Auth state handler
 let resetMode = false;
 
 sb.auth.onAuthStateChange(async (event, session) => {
