@@ -450,18 +450,24 @@ async function doLogout() {
 
 // Detecta link de recuperacao de senha pelo hash da URL
 const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-const isRecovery = hashParams.get('type') === 'recovery';
+const tokenType = hashParams.get('type');
+const isRecovery = tokenType === 'recovery';
+const isInvite = tokenType === 'invite';
+const needsPassword = isRecovery || isInvite;
 
-if(isRecovery) {
+if(needsPassword) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('reset-screen').style.display = 'flex';
+  if(isInvite) {
+    document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
+  }
   const accessToken = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token') || '';
   if(accessToken) {
     sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
       .then(({ data, error }) => {
         if(error) {
-          document.getElementById('reset-error').textContent = 'Sessão inválida: ' + error.message;
+          document.getElementById('reset-error').textContent = 'Erro de sessão: ' + error.message;
           document.getElementById('reset-error').style.display = 'block';
         }
       });
@@ -477,7 +483,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('reset-screen').style.display = 'flex';
   }
-  if(event === 'SIGNED_IN' && session && !isRecovery) {
+  if(event === 'SIGNED_IN' && session && !needsPassword) {
     await loadSession(session.user);
   }
 });
