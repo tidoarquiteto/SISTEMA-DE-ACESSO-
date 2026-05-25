@@ -480,23 +480,6 @@ sb.auth.onAuthStateChange(async (event, session) => {
     await loadSession(session.user);
   }
 });
-  }
-} else {
-  sb.auth.getSession().then(async ({ data: { session } }) => {
-    if(session) await loadSession(session.user);
-  });
-}
-
-sb.auth.onAuthStateChange(async (event, session) => {
-  if(event === 'PASSWORD_RECOVERY') {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('reset-screen').style.display = 'flex';
-  }
-  if(event === 'SIGNED_IN' && session && !needsPassword) {
-    await loadSession(session.user);
-  }
-});
-
 async function doReset() {
   const p1 = document.getElementById("reset-pass").value;
   const p2 = document.getElementById("reset-pass2").value;
