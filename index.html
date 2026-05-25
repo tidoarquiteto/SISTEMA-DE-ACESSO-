@@ -486,29 +486,23 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   }
 }
 
-sb.auth.onAuthStateChange(async (event, session) => {
-  if(event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && resetMode)) {
-    // Sessao estabelecida via link - agora pode salvar senha
-    if(_savedPassword) {
-      const { error } = await sb.auth.updateUser({ password: _savedPassword });
-      if(!error) {
-        resetMode = false;
-        _savedPassword = '';
-        document.getElementById('reset-screen').style.display = 'none';
-        await loadSession(session.user);
-        toast('Senha definida com sucesso!');
-      }
-    }
-  }
-  if(event === 'SIGNED_IN' && session && !resetMode) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('reset-screen').style.display = 'none';
-    await loadSession(session.user);
-  }
-  if(event === 'INITIAL_SESSION' && session && !resetMode) {
+// Verifica sessao existente ao carregar
+sb.auth.getSession().then(async ({ data: { session } }) => {
+  if(session && !resetMode) {
     await loadSession(session.user);
   }
 });
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(event === 'SIGNED_IN' && session && !resetMode) {
+    await loadSession(session.user);
+  }
+  if(event === 'SIGNED_OUT') {
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
+
 async function doReset() {
   const p1 = document.getElementById("reset-pass").value;
   const p2 = document.getElementById("reset-pass2").value;
