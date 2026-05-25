@@ -508,6 +508,14 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
   }
 }
 
+// Magic link ou qualquer token valido - faz login direto
+if(_accessToken && (_tipo === 'magiclink' || _tipo === 'email' || _tipo === 'signup')) {
+  sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken })
+    .then(async ({ data, error }) => {
+      if(data?.session) await loadSession(data.session.user);
+    });
+}
+
 // Verifica sessao existente ao carregar
 sb.auth.getSession().then(async ({ data: { session } }) => {
   if(session && !resetMode) {
