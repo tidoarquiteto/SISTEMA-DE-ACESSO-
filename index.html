@@ -380,7 +380,7 @@
 // SUPABASE CONFIG
 // ══════════════════════════════════
 const SUPA_URL  = 'https://rxbjzskdkjtjlsjbfwff.supabase.co';
-const SUPA_KEY  = 'sb_publishable_UjkFGBrkzOMzcEiK5MWf0w_PCQIRh5j';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4Ymp6c2tka2p0amxzamJmd2ZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4NTU4MjcsImV4cCI6MjA2MzQzMTgyN30.Hmm3wJNSF2k1wrWiJPpGFMHqKV5mnrSwOelXrYiIBt4';
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_KEY, {
   auth: {
@@ -509,10 +509,13 @@ if((_tipo === 'recovery' || _tipo === 'invite') && _accessToken) {
 }
 
 // Magic link ou qualquer token valido - faz login direto
-if(_accessToken && (_tipo === 'magiclink' || _tipo === 'email' || _tipo === 'signup')) {
+if(_accessToken && (_tipo === 'magiclink' || _tipo === 'email' || _tipo === 'signup' || _tipo === 'recovery' || _tipo === 'invite')) {
   sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken })
     .then(async ({ data, error }) => {
-      if(data?.session) await loadSession(data.session.user);
+      if(data?.session && !resetMode) {
+        window.location.hash = '';
+        await loadSession(data.session.user);
+      }
     });
 }
 
