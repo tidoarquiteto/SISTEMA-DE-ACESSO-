@@ -499,10 +499,31 @@ async function doReset() {
   const p2 = document.getElementById("reset-pass2").value;
   const err = document.getElementById("reset-error");
   const btn = document.getElementById("btn-reset");
-  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; err.style.display="block"; return; }
-  if(p1 !== p2) { err.textContent="As senhas não coincidem"; err.style.display="block"; return; }
+  err.style.display = "block";
+  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; return; }
+  if(p1 !== p2) { err.textContent="As senhas nao coincidem"; return; }
+  err.style.display = "none";
   btn.disabled = true;
   btn.innerHTML = "Salvando...";
+
+  // Garante sessao ativa antes de atualizar
+  const { data: sessionData } = await sb.auth.getSession();
+  if(!sessionData.session) {
+    // Tenta restaurar sessao do hash
+    const hash = new URLSearchParams(window.location.hash.replace('#',''));
+    const at = hash.get('access_token');
+    const rt = hash.get('refresh_token') || '';
+    if(at) {
+      await sb.auth.setSession({ access_token: at, refresh_token: rt });
+    } else {
+      err.textContent = "Sessao expirada. Solicite novo link.";
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = "Salvar nova senha";
+      return;
+    }
+  }
+
   const { error } = await sb.auth.updateUser({ password: p1 });
   if(error) {
     err.textContent = "Erro: " + error.message;
@@ -511,9 +532,22 @@ async function doReset() {
     btn.innerHTML = "Salvar nova senha";
     return;
   }
-  document.getElementById("reset-screen").style.display = "none";
-  const { data: { session: s } } = await sb.auth.getSession();
-  if(s) await loadSession(s.user);
+
+  toast("Senha definida! Fazendo login...");
+  setTimeout(async () => {
+    const { data } = await sb.auth.signInWithPassword({ 
+      email: document.getElementById("login-email").value || "willian@tidoarquiteto.com.br", 
+      password: p1 
+    });
+    if(data.user) {
+      document.getElementById("reset-screen").style.display = "none";
+      await loadSession(data.user);
+    } else {
+      document.getElementById("reset-screen").style.display = "none";
+      document.getElementById("login-screen").style.display = "flex";
+      toast("Senha salva! Faca login agora.");
+    }
+  }, 1000);
 }
 
 // ══════════════════════════════════
