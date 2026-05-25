@@ -269,7 +269,7 @@
       <div class="page" id="page-clientes">
         <div class="page-header">
           <div><div class="page-title">Clientes</div><div class="page-sub">Base de clientes cadastrados</div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-cliente')"><i class="ti ti-plus"></i> Novo cliente</button>
+          <button class="btn btn-cyan" id="btn-novo-cliente" onclick="openModal('modal-cliente')"><i class="ti ti-plus"></i> Novo cliente</button>
         </div>
         <div id="lista-clientes"></div>
       </div>
@@ -278,7 +278,7 @@
       <div class="page" id="page-equipe">
         <div class="page-header">
           <div><div class="page-title">Equipe</div><div class="page-sub">Usuários do sistema</div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-usuario')"><i class="ti ti-user-plus"></i> Novo usuário</button>
+          <button class="btn btn-cyan" id="btn-novo-usuario" onclick="openModal('modal-usuario')"><i class="ti ti-user-plus"></i> Novo usuário</button>
         </div>
         <div id="lista-equipe"></div>
       </div>
@@ -398,9 +398,20 @@ let filtroAtual  = 'todos';
 const roleLabel  = {admin:'Admin', atendente:'Atendente', tecnico:'Técnico'};
 const roleBadge  = {admin:'badge-admin', atendente:'badge-atendente', tecnico:'badge-tecnico'};
 
-function hoje() { return new Date().toISOString().split('T')[0]; }
 function fmtDate(d) { if(!d) return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
-function initials(n='') { return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function initials(n='') { return String(n || '').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function esc(v='') {
+  return String(v ?? '').replace(/[&<>'"]/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'
+  }[ch]));
+}
+function hoje() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 // ══════════════════════════════════
 // TOAST
@@ -437,18 +448,26 @@ function showError(msg) {
 
 async function loadSession(user) {
   currentUser = user;
-  
-  // Sempre usa perfil admin como fallback
-  currentProfile = { id: user.id, nome: user.email.split('@')[0], perfil: 'admin', ativo: true };
-  
-  try {
-    const { data: profile, error: profileError } = await sb.from('profiles').select('*').eq('id', user.id).single();
-    if(profile && !profileError) {
-      currentProfile = profile;
-    }
-  } catch(e) {
-    console.log('Perfil nao carregado, usando admin padrao');
+
+  const { data: profile, error: profileError } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if(profileError || !profile || profile.ativo === false || !['admin','atendente','tecnico'].includes(profile.perfil)) {
+    console.error('Perfil inválido ou ausente:', profileError || profile);
+    await sb.auth.signOut();
+    currentUser = null;
+    currentProfile = null;
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('reset-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    showError('Usuário sem perfil ativo. Fale com o administrador.');
+    return;
   }
+
+  currentProfile = profile;
   
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('reset-screen').style.display = 'none';
@@ -573,9 +592,29 @@ async function doReset() {
       toast("Senha salva! Faca o login.");
     }
   } else if(_accessToken) {
-    // Estabelece sessao com o token - o onAuthStateChange vai salvar a senha
-    toast("Estabelecendo sessao...");
-    await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken });
+    const { data, error: sessionError } = await sb.auth.setSession({ access_token: _accessToken, refresh_token: _refreshToken });
+    if(sessionError || !data?.session) {
+      err.textContent = "Sessao expirada. Solicite novo link.";
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = "Salvar nova senha";
+      _savedPassword = '';
+      return;
+    }
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if(error) {
+      err.textContent = "Erro: " + error.message;
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = "Salvar nova senha";
+      _savedPassword = '';
+      return;
+    }
+    resetMode = false;
+    _savedPassword = '';
+    window.location.hash = '';
+    document.getElementById("reset-screen").style.display = "none";
+    await loadSession(data.session.user);
   } else {
     err.textContent = "Sessao expirada. Solicite novo link.";
     err.style.display = "block";
@@ -598,7 +637,7 @@ function setupUI() {
   const p = currentProfile;
   document.getElementById('topbar-name').textContent = p.nome;
   document.getElementById('topbar-avatar').textContent = initials(p.nome);
-  document.getElementById('topbar-badge').outerHTML = `<span id="topbar-badge" class="badge ${roleBadge[p.perfil]}">${roleLabel[p.perfil]}</span>`;
+  document.getElementById('topbar-badge').outerHTML = `<span id="topbar-badge" class="badge ${roleBadge[p.perfil]}">${esc(roleLabel[p.perfil]||p.perfil)}</span>`;
 
   const nav = document.getElementById('sidebar');
   nav.innerHTML = '<div class="nav-section">Menu</div>';
@@ -616,6 +655,11 @@ function setupUI() {
     if(el) el.style.display = canCreate ? 'inline-flex' : 'none';
   });
 
+  const btnCliente = document.getElementById('btn-novo-cliente');
+  if(btnCliente) btnCliente.style.display = p.perfil !== 'tecnico' ? 'inline-flex' : 'none';
+  const btnUsuario = document.getElementById('btn-novo-usuario');
+  if(btnUsuario) btnUsuario.style.display = p.perfil === 'admin' ? 'inline-flex' : 'none';
+
   document.getElementById('painel-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 
@@ -623,7 +667,7 @@ async function loadTecnicos() {
   const { data } = await sb.from('profiles').select('id,nome').eq('perfil','tecnico').eq('ativo',true);
   tecnicos = data || [];
   const sel = document.getElementById('f-tecnico');
-  if(sel) sel.innerHTML = '<option value="">Selecione...</option>' + tecnicos.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
+  if(sel) sel.innerHTML = '<option value="">Selecione...</option>' + tecnicos.map(t=>`<option value="${esc(t.id)}">${esc(t.nome)}</option>`).join('');
 }
 
 // ══════════════════════════════════
@@ -655,30 +699,31 @@ function cardHTML(a) {
   const isAdmin = currentProfile.perfil !== 'tecnico';
   const cobTag = a.cobrado ? `<span class="badge badge-cobrado">Cobrado</span>` : (a.status==='concluido'?`<span class="badge badge-cobrar">A cobrar</span>`:'');
   const val = a.valor>0 ? `<span class="card-valor">R$ ${Number(a.valor).toFixed(2).replace('.',',')}</span>` : `<span style="font-size:12px;color:var(--text-lo);">Sem valor</span>`;
+  const id = Number(a.id);
   let actions = '';
   if(a.status!=='concluido') {
     const nxt=a.status==='pendente'?'andamento':'concluido';
     const lbl=a.status==='pendente'?'Iniciar':'Concluir';
     const ico=a.status==='pendente'?'ti-player-play':'ti-check';
-    actions+=`<button class="btn btn-sm btn-green" onclick="mudarStatus(${a.id},'${nxt}')"><i class="ti ${ico}"></i> ${lbl}</button>`;
+    actions+=`<button class="btn btn-sm btn-green" onclick="mudarStatus(${id},'${nxt}')"><i class="ti ${ico}"></i> ${lbl}</button>`;
   }
-  if(a.status==='andamento') actions+=`<button class="btn btn-sm btn-outline" onclick="mudarStatus(${a.id},'pendente')"><i class="ti ti-rotate-left"></i> Reverter</button>`;
-  if(a.status==='concluido'&&!a.cobrado&&isAdmin) actions+=`<button class="btn btn-sm btn-cyan" onclick="marcarCobrado(${a.id})"><i class="ti ti-currency-dollar"></i> Marcar cobrado</button>`;
-  if(isAdmin) actions+=`<button class="btn btn-sm btn-danger" onclick="excluir(${a.id})" style="margin-left:auto;"><i class="ti ti-trash"></i></button>`;
+  if(a.status==='andamento') actions+=`<button class="btn btn-sm btn-outline" onclick="mudarStatus(${id},'pendente')"><i class="ti ti-rotate-left"></i> Reverter</button>`;
+  if(a.status==='concluido'&&!a.cobrado&&isAdmin) actions+=`<button class="btn btn-sm btn-cyan" onclick="marcarCobrado(${id})"><i class="ti ti-currency-dollar"></i> Marcar cobrado</button>`;
+  if(isAdmin) actions+=`<button class="btn btn-sm btn-danger" onclick="excluir(${id})" style="margin-left:auto;"><i class="ti ti-trash"></i></button>`;
   return `<div class="card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div>
-        <div class="card-client"><i class="ti ti-user-circle" style="font-size:14px;margin-right:5px;color:var(--cyan);"></i>${a.cliente}</div>
+        <div class="card-client"><i class="ti ti-user-circle" style="font-size:14px;margin-right:5px;color:var(--cyan);"></i>${esc(a.cliente)}</div>
         <div class="card-meta">
-          <span><i class="ti ti-wifi"></i>${a.acesso}</span>
-          <span><i class="ti ti-user-cog"></i>${a.tecnico_nome||'—'}</span>
+          <span><i class="ti ti-wifi"></i>${esc(a.acesso)}</span>
+          <span><i class="ti ti-user-cog"></i>${esc(a.tecnico_nome||'—')}</span>
           <span><i class="ti ti-calendar"></i>${fmtDate(a.data)}</span>
         </div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${statusBadge(a.status)} ${cobTag} ${val}</div>
     </div>
-    <div class="card-service">${a.servico}</div>
-    ${a.obs?`<div class="card-obs"><i class="ti ti-notes" style="font-size:12px;"></i> ${a.obs}</div>`:''}
+    <div class="card-service">${esc(a.servico)}</div>
+    ${a.obs?`<div class="card-obs"><i class="ti ti-notes" style="font-size:12px;"></i> ${esc(a.obs)}</div>`:''}
     <div class="card-actions">${actions}</div>
   </div>`;
 }
@@ -787,9 +832,9 @@ async function renderClientes() {
   el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
     <table class="tbl"><thead><tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Segmento</th><th></th></tr></thead>
     <tbody>${list.map(c=>`<tr>
-      <td style="color:var(--text-hi);font-weight:600;">${c.nome}</td>
-      <td>${c.whatsapp||'—'}</td><td>${c.email||'—'}</td>
-      <td>${c.segmento?`<span class="badge badge-atendente">${c.segmento}</span>`:'—'}</td>
+      <td style="color:var(--text-hi);font-weight:600;">${esc(c.nome)}</td>
+      <td>${esc(c.whatsapp||'—')}</td><td>${esc(c.email||'—')}</td>
+      <td>${c.segmento?`<span class="badge badge-atendente">${esc(c.segmento)}</span>`:'—'}</td>
       <td><button class="btn btn-sm btn-danger" onclick="excluirCliente(${c.id})"><i class="ti ti-trash"></i></button></td>
     </tr>`).join('')}</tbody></table></div>`;
 }
@@ -806,10 +851,10 @@ async function renderEquipe() {
     <table class="tbl"><thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th></th></tr></thead>
     <tbody>${list.map(u=>`<tr>
       <td><div style="display:flex;align-items:center;gap:10px;">
-        <div class="avatar" style="width:28px;height:28px;font-size:11px;">${initials(u.nome)}</div>
-        <span style="color:var(--text-hi);font-weight:600;">${u.nome}</span>
+        <div class="avatar" style="width:28px;height:28px;font-size:11px;">${esc(initials(u.nome))}</div>
+        <span style="color:var(--text-hi);font-weight:600;">${esc(u.nome)}</span>
       </div></td>
-      <td><span class="badge badge-${u.perfil}">${roleLabel[u.perfil]}</span></td>
+      <td><span class="badge badge-${u.perfil}">${esc(roleLabel[u.perfil]||u.perfil)}</span></td>
       <td><span class="badge ${u.ativo?'badge-done':'badge-cobrar'}">${u.ativo?'Ativo':'Inativo'}</span></td>
       <td>${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
     </tr>`).join('')}</tbody></table></div>`;
@@ -826,6 +871,7 @@ async function mudarStatus(id, novo) {
 }
 
 async function marcarCobrado(id) {
+  if(currentProfile.perfil === 'tecnico') { toast('Sem permissão','error'); return; }
   const { error } = await sb.from('atendimentos').update({cobrado:true}).eq('id',id);
   if(error) { toast('Erro ao marcar cobrado','error'); return; }
   toast('Marcado como cobrado!');
@@ -833,6 +879,7 @@ async function marcarCobrado(id) {
 }
 
 async function excluir(id) {
+  if(currentProfile.perfil === 'tecnico') { toast('Sem permissão','error'); return; }
   if(!confirm('Excluir este atendimento?')) return;
   const { error } = await sb.from('atendimentos').delete().eq('id',id);
   if(error) { toast('Erro ao excluir','error'); return; }
@@ -841,12 +888,14 @@ async function excluir(id) {
 }
 
 async function excluirCliente(id) {
+  if(currentProfile.perfil === 'tecnico') { toast('Sem permissão','error'); return; }
   if(!confirm('Excluir cliente?')) return;
   await sb.from('clientes').delete().eq('id',id);
   toast('Cliente removido'); renderClientes();
 }
 
 async function excluirUsuario(id) {
+  if(currentProfile.perfil !== 'admin') { toast('Sem permissão','error'); return; }
   if(!confirm('Remover usuário?')) return;
   await sb.from('profiles').update({ativo:false}).eq('id',id);
   toast('Usuário desativado'); renderEquipe();
@@ -856,6 +905,7 @@ async function excluirUsuario(id) {
 // SAVE
 // ══════════════════════════════════
 async function salvarAtendimento() {
+  if(currentProfile.perfil === 'tecnico') { toast('Sem permissão','error'); return; }
   const c   = document.getElementById('f-cliente').value.trim();
   const a   = document.getElementById('f-acesso').value;
   const ao  = document.getElementById('f-acesso-outro').value.trim();
@@ -886,6 +936,7 @@ async function salvarAtendimento() {
 }
 
 async function salvarCliente() {
+  if(currentProfile.perfil === 'tecnico') { toast('Sem permissão','error'); return; }
   const n = document.getElementById('fc-nome').value.trim();
   if(!n) { toast('Informe o nome','error'); return; }
   const { error } = await sb.from('clientes').insert({
@@ -903,6 +954,7 @@ async function salvarCliente() {
 }
 
 async function salvarUsuario() {
+  if(currentProfile.perfil !== 'admin') { toast('Sem permissão','error'); return; }
   const n = document.getElementById('fu-nome').value.trim();
   const e = document.getElementById('fu-email').value.trim();
   const p = document.getElementById('fu-perfil').value;
