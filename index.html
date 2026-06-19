@@ -8,182 +8,167 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
 <style>
-  :root {
-    --bg-deep:   #080e1a;
-    --bg-panel:  #0d1526;
-    --bg-card:   #111d33;
-    --bg-hover:  #162040;
-    --border:    rgba(0,229,255,0.10);
-    --border-md: rgba(0,229,255,0.20);
-    --cyan:      #00e5ff;
-    --cyan-dim:  rgba(0,229,255,0.12);
-    --cyan-glow: rgba(0,229,255,0.30);
-    --text-hi:   #ffffff;
-    --text-md:   #8ea8cc;
-    --text-lo:   #4a6080;
-    --green:     #00d68f;
-    --green-bg:  rgba(0,214,143,0.10);
-    --amber:     #ffb800;
-    --amber-bg:  rgba(255,184,0,0.10);
-    --red:       #ff4d6a;
-    --red-bg:    rgba(255,77,106,0.10);
-    --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
-    --font-head: 'Syne', sans-serif;
-    --font-body: 'Inter', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-hi); display: flex; flex-direction: column; min-height: 100vh; }
-  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+:root {
+  --bg:     #080e1a;
+  --panel:  #0d1526;
+  --card:   #111d33;
+  --hover:  #162040;
+  --border: rgba(0,229,255,0.10);
+  --bordermd: rgba(0,229,255,0.20);
+  --cyan:   #00e5ff;
+  --cyandim: rgba(0,229,255,0.12);
+  --green:  #00d68f;
+  --greenbg: rgba(0,214,143,0.10);
+  --amber:  #ffb800;
+  --amberbg: rgba(255,184,0,0.10);
+  --red:    #ff4d6a;
+  --redbg:  rgba(255,77,106,0.10);
+  --texthi: #ffffff;
+  --textmd: #8ea8cc;
+  --textlo: #4a6080;
+  --rsm: 6px; --rmd: 10px; --rlg: 14px;
+  --head: 'Syne', sans-serif;
+  --body: 'Inter', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg);color:var(--texthi);display:flex;flex-direction:column;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bordermd);border-radius:2px}
 
-  /* LOGIN */
-  #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; position: relative; overflow: hidden; }
-  #login-screen::before { content:''; position:absolute; top:-200px; left:50%; transform:translateX(-50%); width:600px; height:600px; background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 70%); pointer-events:none; }
-  .login-box { background:var(--bg-panel); border:1px solid var(--border-md); border-radius:var(--r-lg); padding:2.5rem 2rem; width:100%; max-width:380px; position:relative; z-index:1; }
-  .login-logo { font-family:var(--font-head); font-size:22px; font-weight:800; color:var(--cyan); text-align:center; margin-bottom:4px; letter-spacing:-0.5px; }
-  .login-sub { font-size:12px; color:var(--text-md); text-align:center; margin-bottom:2rem; }
-  .login-error { background:var(--red-bg); border:1px solid rgba(255,77,106,0.3); border-radius:var(--r-sm); padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:1rem; display:none; }
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 70%);pointer-events:none}
+.login-box{background:var(--panel);border:1px solid var(--bordermd);border-radius:var(--rlg);padding:2.5rem 2rem;width:100%;max-width:380px;position:relative;z-index:1}
+.login-logo{font-family:var(--head);font-size:22px;font-weight:800;color:var(--cyan);text-align:center;margin-bottom:4px;letter-spacing:-0.5px}
+.login-sub{font-size:12px;color:var(--textmd);text-align:center;margin-bottom:2rem}
+.login-err{background:var(--redbg);border:1px solid rgba(255,77,106,0.3);border-radius:var(--rsm);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:1rem;display:none}
 
-  /* FORMS */
-  .field { margin-bottom:14px; }
-  .field label { font-size:12px; color:var(--text-md); display:block; margin-bottom:5px; font-weight:500; }
-  .field input, .field select, .field textarea { width:100%; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-sm); padding:9px 12px; font-size:13px; color:var(--text-hi); font-family:var(--font-body); outline:none; transition:border-color .2s; }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,229,255,0.08); }
-  .field select option { background:var(--bg-card); }
-  .field textarea { min-height:70px; resize:vertical; }
-  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+/* FORMS */
+.field{margin-bottom:14px}
+.field label{font-size:12px;color:var(--textmd);display:block;margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--rsm);padding:9px 12px;font-size:13px;color:var(--texthi);font-family:var(--body);outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.08)}
+.field select option{background:var(--card)}
+.field textarea{min-height:70px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 
-  /* BUTTONS */
-  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:var(--r-sm); font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .2s; font-family:var(--font-body); }
-  .btn-cyan { background:var(--cyan); color:var(--bg-deep); }
-  .btn-cyan:hover { opacity:.85; box-shadow:0 0 16px var(--cyan-glow); }
-  .btn-cyan:disabled { opacity:.4; cursor:not-allowed; }
-  .btn-outline { background:transparent; color:var(--text-md); border:1px solid var(--border-md); }
-  .btn-outline:hover { border-color:var(--cyan); color:var(--cyan); }
-  .btn-ghost { background:transparent; color:var(--text-md); border:none; padding:7px 12px; font-size:12px; }
-  .btn-ghost:hover { color:var(--text-hi); }
-  .btn-danger { background:var(--red-bg); color:var(--red); border:1px solid rgba(255,77,106,0.2); }
-  .btn-danger:hover { background:rgba(255,77,106,0.2); }
-  .btn-sm { padding:5px 12px; font-size:12px; }
-  .btn-green { background:var(--green-bg); color:var(--green); border:1px solid rgba(0,214,143,0.2); }
-  .btn-green:hover { background:rgba(0,214,143,0.2); }
-  .btn-full { width:100%; justify-content:center; }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--body)}
+.btn-cyan{background:var(--cyan);color:var(--bg)}.btn-cyan:hover{opacity:.85;box-shadow:0 0 16px rgba(0,229,255,0.35)}.btn-cyan:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--textmd);border:1px solid var(--bordermd)}.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-ghost{background:transparent;color:var(--textmd);border:none;padding:7px 12px;font-size:12px}.btn-ghost:hover{color:var(--texthi)}
+.btn-danger{background:var(--redbg);color:var(--red);border:1px solid rgba(255,77,106,0.2)}.btn-danger:hover{background:rgba(255,77,106,0.2)}
+.btn-green{background:var(--greenbg);color:var(--green);border:1px solid rgba(0,214,143,0.2)}.btn-green:hover{background:rgba(0,214,143,0.2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
 
-  /* BADGES */
-  .badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; white-space:nowrap; }
-  .badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
-  .badge-pending { background:var(--amber-bg); color:var(--amber); }
-  .badge-progress { background:rgba(0,140,255,0.12); color:#5ab4ff; }
-  .badge-done { background:var(--green-bg); color:var(--green); }
-  .badge-cobrar { background:var(--red-bg); color:var(--red); }
-  .badge-cobrado { background:rgba(90,180,255,0.1); color:#5ab4ff; }
-  .badge-admin { background:rgba(180,120,255,0.12); color:#c084fc; }
-  .badge-atendente { background:var(--cyan-dim); color:var(--cyan); }
-  .badge-tecnico { background:var(--amber-bg); color:var(--amber); }
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.badge-pending{background:var(--amberbg);color:var(--amber)}
+.badge-progress{background:rgba(0,140,255,0.12);color:#5ab4ff}
+.badge-done{background:var(--greenbg);color:var(--green)}
+.badge-cobrar{background:var(--redbg);color:var(--red)}
+.badge-cobrado{background:rgba(90,180,255,0.1);color:#5ab4ff}
+.badge-admin{background:rgba(180,120,255,0.12);color:#c084fc}
+.badge-atendente{background:var(--cyandim);color:var(--cyan)}
+.badge-tecnico{background:var(--amberbg);color:var(--amber)}
 
-  /* APP */
-  #app { display:none; flex:1; flex-direction:column; height:100vh; }
-  #app.visible { display:flex; }
+/* APP */
+#app{display:none;flex:1;flex-direction:column;height:100vh}
+#app.visible{display:flex}
 
-  /* TOPBAR */
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; height:56px; background:var(--bg-panel); border-bottom:1px solid var(--border); flex-shrink:0; }
-  .topbar-logo { font-family:var(--font-head); font-weight:800; font-size:16px; color:var(--cyan); letter-spacing:-0.5px; display:flex; align-items:center; gap:8px; }
-  .topbar-logo-dot { width:8px; height:8px; border-radius:50%; background:var(--cyan); animation:pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  .topbar-user { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-md); }
-  .avatar { width:32px; height:32px; border-radius:50%; background:var(--cyan-dim); border:1px solid var(--border-md); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--cyan); font-family:var(--font-head); }
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:56px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-logo{font-family:var(--head);font-weight:800;font-size:16px;color:var(--cyan);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--textmd)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--cyandim);border:1px solid var(--bordermd);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--cyan);font-family:var(--head)}
 
-  /* LAYOUT */
-  .layout { display:flex; flex:1; overflow:hidden; }
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
 
-  /* SIDEBAR */
-  .sidebar { width:220px; flex-shrink:0; background:var(--bg-panel); border-right:1px solid var(--border); padding:1rem 0; display:flex; flex-direction:column; overflow-y:auto; }
-  .nav-section { font-size:10px; font-weight:700; letter-spacing:.1em; color:var(--text-lo); padding:12px 20px 6px; text-transform:uppercase; }
-  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 20px; font-size:13px; color:var(--text-md); cursor:pointer; transition:all .15s; border:none; background:none; width:100%; text-align:left; font-family:var(--font-body); position:relative; }
-  .nav-item i { font-size:16px; }
-  .nav-item:hover { color:var(--text-hi); background:var(--bg-hover); }
-  .nav-item.active { color:var(--cyan); background:var(--cyan-dim); }
-  .nav-item.active::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--cyan); border-radius:0 3px 3px 0; }
-  .nav-badge { margin-left:auto; background:var(--red); color:white; font-size:10px; font-weight:700; padding:1px 6px; border-radius:10px; min-width:18px; text-align:center; }
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);padding:1rem 0;display:flex;flex-direction:column;overflow-y:auto}
+.nav-sec{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--textlo);padding:12px 20px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--textmd);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:var(--body);position:relative}
+.nav-item i{font-size:16px}
+.nav-item:hover{color:var(--texthi);background:var(--hover)}
+.nav-item.active{color:var(--cyan);background:var(--cyandim)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan);border-radius:0 3px 3px 0}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
 
-  /* MAIN */
-  .main { flex:1; overflow-y:auto; padding:1.5rem; background:var(--bg-deep); }
-  .page { display:none; }
-  .page.active { display:block; }
-  .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
-  .page-title { font-family:var(--font-head); font-size:20px; font-weight:700; }
-  .page-sub { font-size:13px; color:var(--text-lo); margin-top:2px; }
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:1.5rem;background:var(--bg)}
+.page{display:none}.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.page-title{font-family:var(--head);font-size:20px;font-weight:700}
+.page-sub{font-size:13px;color:var(--textlo);margin-top:2px}
 
-  /* STATS */
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:1.5rem; }
-  .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-md); padding:1rem 1.2rem; position:relative; overflow:hidden; }
-  .stat-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--accent,var(--cyan)); opacity:.4; }
-  .stat-label { font-size:11px; color:var(--text-lo); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
-  .stat-val { font-family:var(--font-head); font-size:26px; font-weight:800; color:var(--accent,var(--cyan)); }
-  .stat-icon { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:28px; color:var(--accent,var(--cyan)); opacity:.12; }
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rmd);padding:1rem 1.2rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--acc,var(--cyan));opacity:.4}
+.stat-label{font-size:11px;color:var(--textlo);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.stat-val{font-family:var(--head);font-size:26px;font-weight:800;color:var(--acc,var(--cyan))}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;color:var(--acc,var(--cyan));opacity:.12}
 
-  /* CARDS */
-  .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-md); padding:1.2rem; margin-bottom:12px; }
-  .card:hover { border-color:var(--border-md); }
-  .card-client { font-family:var(--font-head); font-size:15px; font-weight:700; }
-  .card-meta { font-size:12px; color:var(--text-md); margin-top:2px; display:flex; gap:10px; flex-wrap:wrap; }
-  .card-meta span { display:flex; align-items:center; gap:4px; }
-  .card-meta i { font-size:13px; }
-  .card-service { font-size:13px; color:var(--text-md); margin:8px 0; line-height:1.5; }
-  .card-obs { font-size:12px; color:var(--text-lo); margin-top:4px; font-style:italic; }
-  .card-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center; }
-  .card-valor { font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--cyan); }
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rmd);padding:1.2rem;margin-bottom:12px}
+.card:hover{border-color:var(--bordermd)}
+.card-client{font-family:var(--head);font-size:15px;font-weight:700}
+.card-meta{font-size:12px;color:var(--textmd);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+.card-meta span{display:flex;align-items:center;gap:4px}
+.card-service{font-size:13px;color:var(--textmd);margin:8px 0;line-height:1.5}
+.card-obs{font-size:12px;color:var(--textlo);margin-top:4px;font-style:italic}
+.card-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.card-valor{font-family:var(--head);font-size:15px;font-weight:700;color:var(--cyan)}
 
-  /* REMINDER */
-  .reminder { background:rgba(255,184,0,0.06); border:1px solid rgba(255,184,0,0.2); border-radius:var(--r-md); padding:12px 16px; display:flex; align-items:center; gap:12px; margin-bottom:1.2rem; }
-  .reminder i { font-size:20px; color:var(--amber); }
-  .reminder-text { font-size:13px; color:var(--amber); }
+/* REMINDER */
+.reminder{background:rgba(255,184,0,0.06);border:1px solid rgba(255,184,0,0.2);border-radius:var(--rmd);padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:1.2rem}
+.reminder i{font-size:20px;color:var(--amber)}
+.reminder-text{font-size:13px;color:var(--amber)}
 
-  /* FILTERS */
-  .filter-row { display:flex; gap:8px; margin-bottom:1rem; flex-wrap:wrap; }
-  .filter-btn { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-md); font-family:var(--font-body); transition:all .15s; }
-  .filter-btn:hover { border-color:var(--cyan); color:var(--cyan); }
-  .filter-btn.active { background:var(--cyan-dim); border-color:var(--cyan); color:var(--cyan); }
+/* FILTERS */
+.filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--textmd);font-family:var(--body);transition:all .15s}
+.filter-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.filter-btn.active{background:var(--cyandim);border-color:var(--cyan);color:var(--cyan)}
 
-  /* EMPTY */
-  .empty { text-align:center; padding:3rem; color:var(--text-lo); font-size:13px; }
-  .empty i { font-size:36px; display:block; margin-bottom:10px; opacity:.4; }
+/* EMPTY */
+.empty{text-align:center;padding:3rem;color:var(--textlo);font-size:13px}
+.empty i{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
 
-  /* LOADING */
-  .loading { text-align:center; padding:2rem; color:var(--text-lo); font-size:13px; }
-  .spinner { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--cyan); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 10px; }
-  @keyframes spin { to{transform:rotate(360deg)} }
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--bordermd);border-radius:var(--rlg);padding:1.5rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.modal-title{font-family:var(--head);font-size:17px;font-weight:700}
 
-  /* MODAL */
-  .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
-  .modal-overlay.open { display:flex; }
-  .modal { background:var(--bg-panel); border:1px solid var(--border-md); border-radius:var(--r-lg); padding:1.5rem; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; animation:slideUp .2s ease; }
-  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:none;opacity:1} }
-  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem; }
-  .modal-title { font-family:var(--font-head); font-size:17px; font-weight:700; }
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--panel);border:1px solid var(--bordermd);border-radius:var(--rmd);padding:12px 18px;font-size:13px;color:var(--texthi);z-index:200;animation:slideUp .2s ease;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+.toast.ok{border-color:rgba(0,214,143,0.4);color:var(--green)}
+.toast.err{border-color:rgba(255,77,106,0.4);color:var(--red)}
 
-  /* TOAST */
-  .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-panel); border:1px solid var(--border-md); border-radius:var(--r-md); padding:12px 18px; font-size:13px; color:var(--text-hi); z-index:200; animation:slideUp .2s ease; display:flex; align-items:center; gap:10px; }
-  .toast.success { border-color:rgba(0,214,143,0.3); }
-  .toast.error { border-color:rgba(255,77,106,0.3); color:var(--red); }
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--textlo);text-transform:uppercase;border-bottom:1px solid var(--border)}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(0,229,255,0.04);color:var(--textmd)}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:var(--hover);color:var(--texthi)}
 
-  /* TABLE */
-  .tbl { width:100%; border-collapse:collapse; font-size:13px; }
-  .tbl th { text-align:left; padding:8px 12px; font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--text-lo); text-transform:uppercase; border-bottom:1px solid var(--border); }
-  .tbl td { padding:10px 12px; border-bottom:1px solid rgba(0,229,255,0.04); color:var(--text-md); }
-  .tbl tr:last-child td { border:none; }
-  .tbl tr:hover td { background:var(--bg-hover); color:var(--text-hi); }
+.sec-title{font-family:var(--head);font-size:14px;font-weight:700;color:var(--textmd);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.glow-line{height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);margin:1.5rem 0;opacity:.3}
 
-  .section-title { font-family:var(--font-head); font-size:14px; font-weight:700; color:var(--text-md); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
-  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
-  .divider { border:none; border-top:1px solid var(--border); margin:1rem 0; }
-  .glow-line { height:1px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); margin:1.5rem 0; opacity:.3; }
-
-  @media (max-width:768px) { .stats-grid{grid-template-columns:repeat(2,1fr);} .sidebar{width:180px;} .g2,.g3{grid-template-columns:1fr;} }
-  @media (max-width:600px) { .sidebar{display:none;} .main{padding:1rem;} }
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}.sidebar{width:180px}.g2,.g3{grid-template-columns:1fr}}
+@media(max-width:600px){.sidebar{display:none}.main{padding:1rem}}
 </style>
 </head>
 <body>
@@ -193,41 +178,25 @@
   <div class="login-box">
     <div class="login-logo">T.I DO ARQUITETO</div>
     <div class="login-sub">Sistema de Gestão de Acessos Remotos</div>
-    <div class="login-error" id="login-error"></div>
-    <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com.br"></div>
-    <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-err" id="login-err"></div>
+    <div class="field"><label>E-mail</label><input type="email" id="lin-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="field"><label>Senha</label><input type="password" id="lin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn btn-cyan btn-full" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
-    <button class="btn btn-outline btn-full" id="btn-magic" onclick="doMagicLink()" style="margin-top:8px;justify-content:center;"><i class="ti ti-mail"></i> Entrar sem senha</button>
-    <div id="magic-msg" style="display:none;text-align:center;margin-top:10px;font-size:12px;color:var(--cyan);">Link enviado! Verifique seu e-mail.</div>
-    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text-lo);">Powered by Supabase Auth</div>
-  </div>
-</div>
-
-<!-- RESET DE SENHA -->
-<div id="reset-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;">
-  <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 70%);pointer-events:none;"></div>
-  <div class="login-box">
-    <div class="login-logo">T.I DO ARQUITETO</div>
-    <div class="login-sub">Definir nova senha</div>
-    <div class="login-error" id="reset-error"></div>
-    <div class="field"><label>Nova senha</label><input type="password" id="reset-pass" placeholder="Mínimo 6 caracteres"></div>
-    <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pass2" placeholder="Repita a senha"></div>
-    <button class="btn btn-cyan btn-full" id="btn-reset" onclick="doReset()"><i class="ti ti-lock"></i> Salvar nova senha</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--textlo)">T.I do Arquiteto © 2025</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo"><div class="topbar-logo-dot"></div>T.I DO ARQUITETO</div>
+    <div class="topbar-logo"><div class="logo-dot"></div>T.I DO ARQUITETO</div>
     <div class="topbar-user">
-      <span id="topbar-badge"></span>
-      <span id="topbar-name" style="font-size:13px;color:var(--text-md);"></span>
-      <div class="avatar" id="topbar-avatar"></div>
-      <button class="btn btn-ghost btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:15px;"></i></button>
+      <span id="top-badge"></span>
+      <span id="top-name"></span>
+      <div class="avatar" id="top-avatar"></div>
+      <button class="btn btn-ghost" onclick="doLogout()" title="Sair"><i class="ti ti-logout" style="font-size:16px"></i></button>
     </div>
   </div>
-
   <div class="layout">
     <nav class="sidebar" id="sidebar"></nav>
     <main class="main">
@@ -236,11 +205,11 @@
       <div class="page active" id="page-painel">
         <div class="page-header">
           <div><div class="page-title">Painel do dia</div><div class="page-sub" id="painel-date"></div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-novo')" id="btn-novo-painel" style="display:none;"><i class="ti ti-plus"></i> Novo atendimento</button>
+          <button class="btn btn-cyan" id="btn-novo-painel" onclick="openModal('modal-ate')" style="display:none"><i class="ti ti-plus"></i> Novo atendimento</button>
         </div>
         <div id="reminder-area"></div>
         <div class="stats-grid" id="stats-grid"></div>
-        <div class="section-title"><i class="ti ti-list-check" style="font-size:14px;"></i> Atendimentos de hoje</div>
+        <div class="sec-title"><i class="ti ti-list-check" style="font-size:14px"></i> Atendimentos de hoje</div>
         <div id="painel-list"></div>
       </div>
 
@@ -248,7 +217,7 @@
       <div class="page" id="page-atendimentos">
         <div class="page-header">
           <div><div class="page-title">Atendimentos</div><div class="page-sub">Todos os registros</div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-novo')" id="btn-novo-lista" style="display:none;"><i class="ti ti-plus"></i> Novo</button>
+          <button class="btn btn-cyan" id="btn-novo-lista" onclick="openModal('modal-ate')" style="display:none"><i class="ti ti-plus"></i> Novo</button>
         </div>
         <div class="filter-row">
           <button class="filter-btn active" onclick="filtrar('todos',this)">Todos</button>
@@ -256,29 +225,29 @@
           <button class="filter-btn" onclick="filtrar('andamento',this)">Em andamento</button>
           <button class="filter-btn" onclick="filtrar('concluido',this)">Concluídos</button>
         </div>
-        <div id="lista-atendimentos"></div>
+        <div id="lista-ate"></div>
       </div>
 
       <!-- COBRANÇAS -->
       <div class="page" id="page-cobrancas">
         <div class="page-header"><div><div class="page-title">Cobranças</div><div class="page-sub">Pendentes e histórico</div></div></div>
-        <div id="lista-cobrancas"></div>
+        <div id="lista-cobr"></div>
       </div>
 
       <!-- CLIENTES -->
       <div class="page" id="page-clientes">
         <div class="page-header">
-          <div><div class="page-title">Clientes</div><div class="page-sub">Base de clientes cadastrados</div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-cliente')"><i class="ti ti-plus"></i> Novo cliente</button>
+          <div><div class="page-title">Clientes</div><div class="page-sub">Base cadastrada</div></div>
+          <button class="btn btn-cyan" onclick="openModal('modal-cli')"><i class="ti ti-plus"></i> Novo cliente</button>
         </div>
-        <div id="lista-clientes"></div>
+        <div id="lista-cli"></div>
       </div>
 
       <!-- EQUIPE -->
       <div class="page" id="page-equipe">
         <div class="page-header">
           <div><div class="page-title">Equipe</div><div class="page-sub">Usuários do sistema</div></div>
-          <button class="btn btn-cyan" onclick="openModal('modal-usuario')"><i class="ti ti-user-plus"></i> Novo usuário</button>
+          <button class="btn btn-cyan" onclick="openModal('modal-usr')"><i class="ti ti-user-plus"></i> Novo usuário</button>
         </div>
         <div id="lista-equipe"></div>
       </div>
@@ -287,45 +256,38 @@
   </div>
 </div>
 
-<!-- MODAL NOVO ATENDIMENTO -->
-<div class="modal-overlay" id="modal-novo">
+<!-- MODAL ATENDIMENTO -->
+<div class="modal-overlay" id="modal-ate">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Novo atendimento</div>
-      <button class="btn btn-ghost" onclick="closeModal('modal-novo')"><i class="ti ti-x" style="font-size:18px;"></i></button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Novo atendimento</div><button class="btn btn-ghost" onclick="closeModal('modal-ate')"><i class="ti ti-x" style="font-size:18px"></i></button></div>
     <div class="g2">
-      <div class="field"><label>Cliente *</label><input type="text" id="f-cliente" placeholder="Nome do cliente"></div>
+      <div class="field"><label>Cliente *</label><input type="text" id="fa-cli" placeholder="Nome do cliente"></div>
       <div class="field"><label>Tipo de acesso *</label>
-        <select id="f-acesso">
+        <select id="fa-acs">
           <option value="">Selecione...</option>
-          <option>AnyDesk</option><option>TeamViewer</option><option>RDP</option>
-          <option>VPN</option><option>SSH</option><option>LogMeIn</option><option>Outro</option>
+          <option>AnyDesk</option><option>TeamViewer</option><option>RDP</option><option>VPN</option><option>SSH</option><option>LogMeIn</option><option>Outro</option>
         </select>
       </div>
     </div>
-    <div class="field" id="f-outro-wrap" style="display:none"><label>Especifique</label><input type="text" id="f-acesso-outro" placeholder="Tipo de acesso"></div>
-    <div class="field"><label>O que será feito *</label><textarea id="f-servico" placeholder="Descreva o serviço..."></textarea></div>
+    <div class="field" id="fa-outro-wrap" style="display:none"><label>Especifique</label><input type="text" id="fa-outro" placeholder="Tipo de acesso"></div>
+    <div class="field"><label>O que será feito *</label><textarea id="fa-srv" placeholder="Descreva o serviço..."></textarea></div>
     <div class="g3">
-      <div class="field"><label>Técnico *</label><select id="f-tecnico"><option value="">Selecione...</option></select></div>
-      <div class="field"><label>Valor (R$)</label><input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01"></div>
-      <div class="field"><label>Status</label><select id="f-status"><option value="pendente">Pendente</option><option value="andamento">Em andamento</option></select></div>
+      <div class="field"><label>Técnico *</label><select id="fa-tec"><option value="">Selecione...</option></select></div>
+      <div class="field"><label>Valor (R$)</label><input type="number" id="fa-val" placeholder="0,00" min="0" step="0.01"></div>
+      <div class="field"><label>Status</label><select id="fa-sts"><option value="pendente">Pendente</option><option value="andamento">Em andamento</option></select></div>
     </div>
-    <div class="field"><label>Observações</label><input type="text" id="f-obs" placeholder="Senha, informações extras..."></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-      <button class="btn btn-outline" onclick="closeModal('modal-novo')">Cancelar</button>
-      <button class="btn btn-cyan" id="btn-salvar-ate" onclick="salvarAtendimento()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    <div class="field"><label>Observações</label><input type="text" id="fa-obs" placeholder="Informações extras..."></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-outline" onclick="closeModal('modal-ate')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarAte()"><i class="ti ti-device-floppy"></i> Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NOVO CLIENTE -->
-<div class="modal-overlay" id="modal-cliente">
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cli">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Novo cliente</div>
-      <button class="btn btn-ghost" onclick="closeModal('modal-cliente')"><i class="ti ti-x" style="font-size:18px;"></i></button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Novo cliente</div><button class="btn btn-ghost" onclick="closeModal('modal-cli')"><i class="ti ti-x" style="font-size:18px"></i></button></div>
     <div class="g2">
       <div class="field"><label>Nome *</label><input type="text" id="fc-nome" placeholder="Nome ou empresa"></div>
       <div class="field"><label>WhatsApp</label><input type="text" id="fc-wpp" placeholder="(11) 99999-9999"></div>
@@ -333,266 +295,156 @@
     <div class="g2">
       <div class="field"><label>E-mail</label><input type="email" id="fc-email" placeholder="cliente@email.com"></div>
       <div class="field"><label>Segmento</label>
-        <select id="fc-seg">
-          <option value="">Selecione...</option>
-          <option>Arquitetura</option><option>Design de Interiores</option><option>Engenharia</option><option>Outro</option>
-        </select>
+        <select id="fc-seg"><option value="">Selecione...</option><option>Arquitetura</option><option>Design de Interiores</option><option>Engenharia</option><option>Outro</option></select>
       </div>
     </div>
     <div class="field"><label>Observações</label><input type="text" id="fc-obs" placeholder="Informações relevantes"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-      <button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button>
-      <button class="btn btn-cyan" onclick="salvarCliente()"><i class="ti ti-device-floppy"></i> Salvar</button>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-outline" onclick="closeModal('modal-cli')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarCli()"><i class="ti ti-device-floppy"></i> Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL NOVO USUÁRIO -->
-<div class="modal-overlay" id="modal-usuario">
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-usr">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Novo usuário</div>
-      <button class="btn btn-ghost" onclick="closeModal('modal-usuario')"><i class="ti ti-x" style="font-size:18px;"></i></button>
-    </div>
+    <div class="modal-header"><div class="modal-title">Novo usuário</div><button class="btn btn-ghost" onclick="closeModal('modal-usr')"><i class="ti ti-x" style="font-size:18px"></i></button></div>
     <div class="g2">
       <div class="field"><label>Nome *</label><input type="text" id="fu-nome" placeholder="Nome completo"></div>
       <div class="field"><label>Perfil *</label>
-        <select id="fu-perfil">
-          <option value="atendente">Atendente</option>
-          <option value="tecnico">Técnico</option>
-          <option value="admin">Admin</option>
-        </select>
+        <select id="fu-perfil"><option value="atendente">Atendente</option><option value="tecnico">Técnico</option><option value="admin">Admin</option></select>
       </div>
     </div>
     <div class="g2">
       <div class="field"><label>E-mail *</label><input type="email" id="fu-email" placeholder="usuario@email.com"></div>
       <div class="field"><label>Senha *</label><input type="password" id="fu-senha" placeholder="Mínimo 6 caracteres"></div>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-      <button class="btn btn-outline" onclick="closeModal('modal-usuario')">Cancelar</button>
-      <button class="btn btn-cyan" onclick="salvarUsuario()"><i class="ti ti-device-floppy"></i> Criar usuário</button>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-outline" onclick="closeModal('modal-usr')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarUsr()"><i class="ti ti-device-floppy"></i> Criar usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR USUÁRIO -->
+<div class="modal-overlay" id="modal-edit-usr">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Editar usuário</div><button class="btn btn-ghost" onclick="closeModal('modal-edit-usr')"><i class="ti ti-x" style="font-size:18px"></i></button></div>
+    <input type="hidden" id="eu-id">
+    <div class="g2">
+      <div class="field"><label>Nome *</label><input type="text" id="eu-nome" placeholder="Nome completo"></div>
+      <div class="field"><label>Perfil *</label>
+        <select id="eu-perfil"><option value="atendente">Atendente</option><option value="tecnico">Técnico</option><option value="admin">Admin</option></select>
+      </div>
+    </div>
+    <div class="field"><label>E-mail *</label><input type="email" id="eu-email" placeholder="usuario@email.com"></div>
+    <div class="field"><label>Nova senha <span style="color:var(--textlo);font-weight:400">(deixe em branco para não alterar)</span></label><input type="password" id="eu-senha" placeholder="Nova senha (mín. 6 caracteres)"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-outline" onclick="closeModal('modal-edit-usr')">Cancelar</button>
+      <button class="btn btn-cyan" onclick="salvarEditUsr()"><i class="ti ti-device-floppy"></i> Salvar alterações</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════
-// SUPABASE CONFIG
-// ══════════════════════════════════
-const SUPA_URL  = 'https://rxbjzskdkjtjlsjbfwff.supabase.co';
-const SUPA_KEY  = 'sb_publishable_UjkFGBrkzOMzcEiK5MWf0w_PCQIRh5j';
-const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-});
+// ══════════════════════════════════════════
+// CONFIG — substitua pela sua URL do Supabase
+// ══════════════════════════════════════════
+const SUPA_URL = 'https://rxbjzskdkjtjlsjbfwff.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4Ymp6c2tka2p0amxzamJmd2ZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTUwNzg5MCwiZXhwIjoyMDk1MDgzODkwfQ.4fFcengNMDzRWqgGwikZA5j9DCRFYqJS6Pb-Tgz6b7A';
 
-let currentUser  = null;
-let currentProfile = null;
-let tecnicos     = [];
-let filtroAtual  = 'todos';
+// ══════════════════════════════════════════
+// API HELPER
+// ══════════════════════════════════════════
+async function api(path, opts={}) {
+  const r = await fetch(SUPA_URL + path, {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...opts.headers },
+    ...opts
+  });
+  if(!r.ok) { const e = await r.text(); throw new Error(e); }
+  const txt = await r.text();
+  return txt ? JSON.parse(txt) : [];
+}
 
-const roleLabel  = {admin:'Admin', atendente:'Atendente', tecnico:'Técnico'};
-const roleBadge  = {admin:'badge-admin', atendente:'badge-atendente', tecnico:'badge-tecnico'};
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let CU = null; // current user
+let tecnicos = [];
+let filtroAtual = 'todos';
+
+const roleLabel = {admin:'Admin', atendente:'Atendente', tecnico:'Técnico'};
+const roleBadge = {admin:'badge-admin', atendente:'badge-atendente', tecnico:'badge-tecnico'};
 
 function hoje() { return new Date().toISOString().split('T')[0]; }
 function fmtDate(d) { if(!d) return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
 function initials(n='') { return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function moeda(v) { return 'R$ ' + Number(v||0).toFixed(2).replace('.',','); }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // TOAST
-// ══════════════════════════════════
-function toast(msg, type='success') {
+// ══════════════════════════════════════════
+function toast(msg, tipo='ok') {
   const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.innerHTML = `<i class="ti ti-${type==='success'?'check':'alert-circle'}"></i> ${msg}`;
+  t.className = 'toast ' + tipo;
+  t.innerHTML = `<i class="ti ti-${tipo==='ok'?'check':'alert-circle'}"></i> ${msg}`;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3500);
 }
 
-// ══════════════════════════════════
-// AUTH
-// ══════════════════════════════════
+// ══════════════════════════════════════════
+// AUTH — login simples com tabela usuarios
+// ══════════════════════════════════════════
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
+  const email = document.getElementById('lin-email').value.trim();
+  const pass  = document.getElementById('lin-pass').value.trim();
+  const err   = document.getElementById('login-err');
   const btn   = document.getElementById('btn-login');
-  const err   = document.getElementById('login-error');
-  if(!email || !pass) { showError('Preencha e-mail e senha.'); return; }
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite;"></i> Entrando...';
   err.style.display = 'none';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if(error) { showError('E-mail ou senha incorretos.'); btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i> Entrar'; return; }
-  await loadSession(data.user);
-}
-
-function showError(msg) {
-  const err = document.getElementById('login-error');
-  err.textContent = msg; err.style.display = 'block';
-}
-
-async function loadSession(user) {
-  console.log('loadSession INICIO');
-  currentUser = user;
-  currentProfile = { id: user.id, nome: (user.email||'admin').split('@')[0], perfil: 'admin', ativo: true };
-  
-  // Mostra o app IMEDIATAMENTE (nao espera a query)
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('reset-screen').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
-  console.log('app visivel');
-  
-  // Busca perfil com timeout de 3s
-  try {
-    const profilePromise = sb.from('profiles').select('*').eq('id', user.id).single();
-    const timeout = new Promise((_, reject) => setTimeout(() => reject('timeout'), 3000));
-    const { data: profile } = await Promise.race([profilePromise, timeout]);
-    if(profile) { currentProfile = profile; console.log('perfil carregado:', profile.perfil); }
-  } catch(e) { console.log('perfil fallback admin (', e, ')'); }
-  
-  try { setupUI(); console.log('setupUI ok'); } catch(e) { console.error('setupUI:', e); }
-  try { await loadTecnicos(); console.log('loadTecnicos ok'); } catch(e) { console.error('loadTecnicos:', e); }
-  try { navigate('painel'); console.log('navigate ok'); } catch(e) { console.error('navigate:', e); }
-  console.log('loadSession FIM');
-}
-
-async function doMagicLink() {
-  const email = document.getElementById('login-email').value.trim();
-  if(!email) { showError('Digite seu e-mail primeiro.'); return; }
-  const btn = document.getElementById('btn-magic');
+  if(!email || !pass) { err.textContent='Preencha e-mail e senha'; err.style.display='block'; return; }
   btn.disabled = true;
-  btn.innerHTML = 'Enviando...';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-  if(error) {
-    showError('Erro: ' + error.message);
+  btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Entrando...';
+  try {
+    const rows = await api(`/rest/v1/usuarios?email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(pass)}&ativo=eq.true&select=*`);
+    if(!rows || !rows.length) { err.textContent='E-mail ou senha incorretos'; err.style.display='block'; btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i> Entrar'; return; }
+    CU = rows[0];
+    localStorage.setItem('tia_user', JSON.stringify(CU));
+    entrar();
+  } catch(e) {
+    err.textContent = 'Erro: ' + e.message;
+    err.style.display = 'block';
     btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-mail"></i> Entrar sem senha';
-    return;
+    btn.innerHTML = '<i class="ti ti-login"></i> Entrar';
   }
-  document.getElementById('magic-msg').style.display = 'block';
-  btn.innerHTML = '<i class="ti ti-check"></i> Link enviado!';
 }
 
-async function doLogout() {
-  await sb.auth.signOut();
-  currentUser = null; currentProfile = null;
-  document.getElementById('login-screen').style.display = 'flex';
+function doLogout() {
+  CU = null;
+  localStorage.removeItem('tia_user');
   document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('btn-login').disabled = false;
   document.getElementById('btn-login').innerHTML = '<i class="ti ti-login"></i> Entrar';
-  document.getElementById('login-pass').value = '';
+  document.getElementById('lin-pass').value = '';
 }
 
-// Auth handler - detectSessionInUrl processa tokens automaticamente
-let resetMode = false;
-
-const _hash = new URLSearchParams(window.location.hash.replace('#',''));
-const _tipo = _hash.get('type');
-const _errorCode = _hash.get('error_code');
-
-if(_errorCode) {
-  history.replaceState(null, '', window.location.pathname);
-}
-
-const _accessToken = _hash.get('access_token');
-const _refreshToken = _hash.get('refresh_token') || '';
-
-if(_tipo === 'recovery' || _tipo === 'invite') {
-  resetMode = true;
+function entrar() {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('reset-screen').style.display = 'flex';
-  if(_tipo === 'invite') {
-    document.querySelector('#reset-screen .login-sub').textContent = 'Criar sua senha de acesso';
-  }
+  document.getElementById('app').classList.add('visible');
+  setupUI();
+  navigate('painel');
 }
 
-sb.auth.onAuthStateChange(async (event, session) => {
-  console.log('AUTH:', event, session ? 'COM SESSAO' : 'SEM');
-  if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session && !resetMode) {
-    history.replaceState(null, '', window.location.pathname);
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('reset-screen').style.display = 'none';
-    await loadSession(session.user);
-  }
-  if(event === 'SIGNED_OUT') {
-    currentUser = null;
-    currentProfile = null;
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('login-screen').style.display = 'flex';
-  }
+// Verifica sessão salva
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('tia_user');
+  if(saved) { try { CU = JSON.parse(saved); entrar(); } catch(e) { localStorage.removeItem('tia_user'); } }
 });
 
-// Processa token do link manualmente
-async function processarToken() {
-  // Verifica sessao existente primeiro
-  const { data: { session: existing } } = await sb.auth.getSession();
-  if(existing && !resetMode) {
-    await loadSession(existing.user);
-    return;
-  }
-  // Se tem token no hash, estabelece a sessao
-  if(_accessToken) {
-    console.log('Processando token tipo:', _tipo);
-    const { data, error } = await sb.auth.setSession({
-      access_token: _accessToken,
-      refresh_token: _refreshToken
-    });
-    if(error) {
-      console.error('Erro setSession:', error.message);
-      if(resetMode) {
-        document.getElementById('reset-error').textContent = 'Erro: ' + error.message;
-        document.getElementById('reset-error').style.display = 'block';
-      }
-      return;
-    }
-    if(data.session) {
-      console.log('Sessao estabelecida!');
-      if(resetMode) {
-        // invite/recovery: aguarda usuario definir senha (ja esta na tela certa)
-        console.log('Aguardando definir senha');
-      } else {
-        // magiclink: entra direto
-        history.replaceState(null, '', window.location.pathname);
-        document.getElementById('login-screen').style.display = 'none';
-        await loadSession(data.session.user);
-      }
-    }
-  }
-}
-processarToken();
-
-async function doReset() {
-  const p1 = document.getElementById("reset-pass").value;
-  const p2 = document.getElementById("reset-pass2").value;
-  const err = document.getElementById("reset-error");
-  const btn = document.getElementById("btn-reset");
-  err.style.display = "none";
-  if(!p1 || p1.length < 6) { err.textContent="Senha deve ter ao menos 6 caracteres"; err.style.display="block"; return; }
-  if(p1 !== p2) { err.textContent="As senhas nao coincidem"; err.style.display="block"; return; }
-  btn.disabled = true;
-  btn.innerHTML = "Salvando...";
-  const { data, error } = await sb.auth.updateUser({ password: p1 });
-  if(error) {
-    err.textContent = "Erro: " + error.message;
-    err.style.display = "block";
-    btn.disabled = false;
-    btn.innerHTML = "Salvar nova senha";
-    return;
-  }
-  resetMode = false;
-  history.replaceState(null, '', window.location.pathname);
-  document.getElementById("reset-screen").style.display = "none";
-  toast("Senha criada com sucesso!");
-  if(data && data.user) await loadSession(data.user);
-}
-
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // SETUP UI
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 const navConfig = {
   admin:     [{id:'painel',icon:'ti-layout-dashboard',label:'Painel'},{id:'atendimentos',icon:'ti-list-check',label:'Atendimentos'},{id:'cobrancas',icon:'ti-receipt',label:'Cobranças',badge:true},'---',{id:'clientes',icon:'ti-users',label:'Clientes'},{id:'equipe',icon:'ti-user-cog',label:'Equipe'}],
   atendente: [{id:'painel',icon:'ti-layout-dashboard',label:'Painel'},{id:'atendimentos',icon:'ti-list-check',label:'Atendimentos'},{id:'cobrancas',icon:'ti-receipt',label:'Cobranças',badge:true},'---',{id:'clientes',icon:'ti-users',label:'Clientes'}],
@@ -600,40 +452,35 @@ const navConfig = {
 };
 
 function setupUI() {
-  const p = currentProfile;
-  document.getElementById('topbar-name').textContent = p.nome;
-  document.getElementById('topbar-avatar').textContent = initials(p.nome);
-  document.getElementById('topbar-badge').outerHTML = `<span id="topbar-badge" class="badge ${roleBadge[p.perfil]}">${roleLabel[p.perfil]}</span>`;
-
+  document.getElementById('top-name').textContent = CU.nome;
+  document.getElementById('top-avatar').textContent = initials(CU.nome);
+  document.getElementById('top-badge').outerHTML = `<span id="top-badge" class="badge ${roleBadge[CU.perfil]}">${roleLabel[CU.perfil]}</span>`;
   const nav = document.getElementById('sidebar');
-  nav.innerHTML = '<div class="nav-section">Menu</div>';
-  (navConfig[p.perfil]||navConfig.admin).forEach(item => {
-    if(item==='---') { nav.innerHTML += '<div class="divider" style="margin:6px 12px;"></div>'; return; }
+  nav.innerHTML = '<div class="nav-sec">Menu</div>';
+  (navConfig[CU.perfil]||navConfig.admin).forEach(item => {
+    if(item==='---') { nav.innerHTML += '<div class="divider" style="margin:6px 12px"></div>'; return; }
     nav.innerHTML += `<button class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')">
       <i class="ti ${item.icon}"></i>${item.label}
       ${item.badge ? '<span class="nav-badge" id="badge-cobr" style="display:none">0</span>' : ''}
     </button>`;
   });
-
-  const canCreate = p.perfil !== 'tecnico';
-  ['btn-novo-painel','btn-novo-lista'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = canCreate ? 'inline-flex' : 'none';
-  });
-
+  const canCreate = CU.perfil !== 'tecnico';
+  ['btn-novo-painel','btn-novo-lista'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display=canCreate?'inline-flex':'none'; });
   document.getElementById('painel-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  loadTecnicos();
 }
 
 async function loadTecnicos() {
-  const { data } = await sb.from('profiles').select('id,nome').eq('perfil','tecnico').eq('ativo',true);
-  tecnicos = data || [];
-  const sel = document.getElementById('f-tecnico');
-  if(sel) sel.innerHTML = '<option value="">Selecione...</option>' + tecnicos.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
+  try {
+    tecnicos = await api('/rest/v1/usuarios?perfil=eq.tecnico&ativo=eq.true&select=id,nome');
+    const sel = document.getElementById('fa-tec');
+    if(sel) sel.innerHTML = '<option value="">Selecione...</option>' + tecnicos.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
+  } catch(e) {}
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // NAVIGATION
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -641,6 +488,7 @@ function navigate(page) {
   document.getElementById('nav-'+page)?.classList.add('active');
   renderPage(page);
 }
+
 function renderPage(page) {
   if(page==='painel') renderPainel();
   else if(page==='atendimentos') renderLista();
@@ -649,17 +497,17 @@ function renderPage(page) {
   else if(page==='equipe') renderEquipe();
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // CARD HTML
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 function statusBadge(s) {
   return {pendente:`<span class="badge badge-pending">Pendente</span>`,andamento:`<span class="badge badge-progress">Em andamento</span>`,concluido:`<span class="badge badge-done">Concluído</span>`}[s]||'';
 }
 
 function cardHTML(a) {
-  const isAdmin = currentProfile.perfil !== 'tecnico';
+  const isAdmin = CU.perfil !== 'tecnico';
   const cobTag = a.cobrado ? `<span class="badge badge-cobrado">Cobrado</span>` : (a.status==='concluido'?`<span class="badge badge-cobrar">A cobrar</span>`:'');
-  const val = a.valor>0 ? `<span class="card-valor">R$ ${Number(a.valor).toFixed(2).replace('.',',')}</span>` : `<span style="font-size:12px;color:var(--text-lo);">Sem valor</span>`;
+  const val = a.valor>0 ? `<span class="card-valor">${moeda(a.valor)}</span>` : `<span style="font-size:12px;color:var(--textlo)">Sem valor</span>`;
   let actions = '';
   if(a.status!=='concluido') {
     const nxt=a.status==='pendente'?'andamento':'concluido';
@@ -669,83 +517,73 @@ function cardHTML(a) {
   }
   if(a.status==='andamento') actions+=`<button class="btn btn-sm btn-outline" onclick="mudarStatus(${a.id},'pendente')"><i class="ti ti-rotate-left"></i> Reverter</button>`;
   if(a.status==='concluido'&&!a.cobrado&&isAdmin) actions+=`<button class="btn btn-sm btn-cyan" onclick="marcarCobrado(${a.id})"><i class="ti ti-currency-dollar"></i> Marcar cobrado</button>`;
-  if(isAdmin) actions+=`<button class="btn btn-sm btn-danger" onclick="excluir(${a.id})" style="margin-left:auto;"><i class="ti ti-trash"></i></button>`;
+  if(isAdmin) actions+=`<button class="btn btn-sm btn-danger" onclick="excluirAte(${a.id})" style="margin-left:auto"><i class="ti ti-trash"></i></button>`;
   return `<div class="card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <div>
-        <div class="card-client"><i class="ti ti-user-circle" style="font-size:14px;margin-right:5px;color:var(--cyan);"></i>${a.cliente}</div>
+        <div class="card-client"><i class="ti ti-user-circle" style="font-size:14px;margin-right:5px;color:var(--cyan)"></i>${a.cliente}</div>
         <div class="card-meta">
           <span><i class="ti ti-wifi"></i>${a.acesso}</span>
           <span><i class="ti ti-user-cog"></i>${a.tecnico_nome||'—'}</span>
           <span><i class="ti ti-calendar"></i>${fmtDate(a.data)}</span>
         </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${statusBadge(a.status)} ${cobTag} ${val}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${statusBadge(a.status)} ${cobTag} ${val}</div>
     </div>
     <div class="card-service">${a.servico}</div>
-    ${a.obs?`<div class="card-obs"><i class="ti ti-notes" style="font-size:12px;"></i> ${a.obs}</div>`:''}
+    ${a.obs?`<div class="card-obs"><i class="ti ti-notes" style="font-size:12px"></i> ${a.obs}</div>`:''}
     <div class="card-actions">${actions}</div>
   </div>`;
 }
 
-function loadingHTML() { return `<div class="loading"><div class="spinner"></div>Carregando...</div>`; }
-
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // PAINEL
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function renderPainel() {
-  document.getElementById('painel-list').innerHTML = loadingHTML();
-  document.getElementById('stats-grid').innerHTML = '';
-
-  let query = sb.from('atendimentos').select('*').eq('data', hoje()).order('created_at',{ascending:false});
-  if(currentProfile.perfil==='tecnico') query = query.eq('tecnico_id', currentUser.id);
-  const { data: ates } = await query;
-  const list = ates || [];
-
-  const acobrar = list.filter(a=>a.status==='concluido'&&!a.cobrado);
-  const total   = acobrar.reduce((s,a)=>s+Number(a.valor),0);
-
-  // reminder
-  const ra = document.getElementById('reminder-area');
-  ra.innerHTML = acobrar.length && currentProfile.perfil!=='tecnico'
-    ? `<div class="reminder"><i class="ti ti-bell"></i><div class="reminder-text"><strong>${acobrar.length} atendimento(s)</strong> concluído(s) aguardando cobrança — total R$ ${total.toFixed(2).replace('.',',')}</div></div>` : '';
-
-  // badge cobr
-  const bc = document.getElementById('badge-cobr');
-  if(bc) { bc.textContent=acobrar.length; bc.style.display=acobrar.length?'inline-block':'none'; }
-
-  // stats
-  const sg = document.getElementById('stats-grid');
-  if(currentProfile.perfil==='tecnico') {
-    sg.innerHTML=`
-      <div class="stat-card" style="--accent:var(--cyan)"><div class="stat-label">Meus chamados</div><div class="stat-val">${list.length}</div><i class="ti ti-list stat-icon"></i></div>
-      <div class="stat-card" style="--accent:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${list.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
-      <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${list.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
-      <div class="stat-card" style="--accent:#5ab4ff"><div class="stat-label">Pendentes</div><div class="stat-val">${list.filter(a=>a.status==='pendente').length}</div><i class="ti ti-clock stat-icon"></i></div>`;
-  } else {
-    sg.innerHTML=`
-      <div class="stat-card" style="--accent:var(--cyan)"><div class="stat-label">Atendimentos hoje</div><div class="stat-val">${list.length}</div><i class="ti ti-list stat-icon"></i></div>
-      <div class="stat-card" style="--accent:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${list.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
-      <div class="stat-card" style="--accent:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${list.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
-      <div class="stat-card" style="--accent:var(--red)"><div class="stat-label">A cobrar</div><div class="stat-val">R$ ${total.toFixed(0)}</div><i class="ti ti-currency-dollar stat-icon"></i></div>`;
-  }
-
-  const pl = document.getElementById('painel-list');
-  pl.innerHTML = list.length ? list.map(a=>cardHTML(a)).join('') : '<div class="empty"><i class="ti ti-calendar"></i>Nenhum atendimento hoje</div>';
+  document.getElementById('painel-list').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--textlo)"><i class="ti ti-loader" style="animation:spin .7s linear infinite;font-size:24px;display:block;margin-bottom:8px"></i>Carregando...</div>';
+  try {
+    let url = `/rest/v1/atendimentos?data=eq.${hoje()}&order=created_at.desc&select=*`;
+    if(CU.perfil==='tecnico') url += `&tecnico_id=eq.${CU.id}`;
+    const ates = await api(url);
+    const acobrar = ates.filter(a=>a.status==='concluido'&&!a.cobrado);
+    const total = acobrar.reduce((s,a)=>s+Number(a.valor||0),0);
+    const ra = document.getElementById('reminder-area');
+    ra.innerHTML = acobrar.length && CU.perfil!=='tecnico'
+      ? `<div class="reminder"><i class="ti ti-bell"></i><div class="reminder-text"><strong>${acobrar.length} atendimento(s)</strong> aguardando cobrança — total ${moeda(total)}</div></div>` : '';
+    const bc = document.getElementById('badge-cobr');
+    if(bc) { bc.textContent=acobrar.length; bc.style.display=acobrar.length?'inline-block':'none'; }
+    const sg = document.getElementById('stats-grid');
+    if(CU.perfil==='tecnico') {
+      sg.innerHTML=`
+        <div class="stat-card" style="--acc:var(--cyan)"><div class="stat-label">Meus chamados</div><div class="stat-val">${ates.length}</div><i class="ti ti-list stat-icon"></i></div>
+        <div class="stat-card" style="--acc:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${ates.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
+        <div class="stat-card" style="--acc:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${ates.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
+        <div class="stat-card" style="--acc:#5ab4ff"><div class="stat-label">Pendentes</div><div class="stat-val">${ates.filter(a=>a.status==='pendente').length}</div><i class="ti ti-clock stat-icon"></i></div>`;
+    } else {
+      sg.innerHTML=`
+        <div class="stat-card" style="--acc:var(--cyan)"><div class="stat-label">Hoje</div><div class="stat-val">${ates.length}</div><i class="ti ti-list stat-icon"></i></div>
+        <div class="stat-card" style="--acc:var(--amber)"><div class="stat-label">Em andamento</div><div class="stat-val">${ates.filter(a=>a.status==='andamento').length}</div><i class="ti ti-player-play stat-icon"></i></div>
+        <div class="stat-card" style="--acc:var(--green)"><div class="stat-label">Concluídos</div><div class="stat-val">${ates.filter(a=>a.status==='concluido').length}</div><i class="ti ti-check stat-icon"></i></div>
+        <div class="stat-card" style="--acc:var(--red)"><div class="stat-label">A cobrar</div><div class="stat-val">R$ ${total.toFixed(0)}</div><i class="ti ti-currency-dollar stat-icon"></i></div>`;
+    }
+    const pl = document.getElementById('painel-list');
+    pl.innerHTML = ates.length ? ates.map(a=>cardHTML(a)).join('') : '<div class="empty"><i class="ti ti-calendar"></i>Nenhum atendimento hoje</div>';
+  } catch(e) { document.getElementById('painel-list').innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i>Erro ao carregar: ${e.message}</div>`; }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // LISTA
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function renderLista() {
-  document.getElementById('lista-atendimentos').innerHTML = loadingHTML();
-  let query = sb.from('atendimentos').select('*').order('created_at',{ascending:false});
-  if(currentProfile.perfil==='tecnico') query = query.eq('tecnico_id', currentUser.id);
-  if(filtroAtual!=='todos') query = query.eq('status', filtroAtual);
-  const { data } = await query;
-  const list = data || [];
-  const el = document.getElementById('lista-atendimentos');
-  el.innerHTML = list.length ? list.map(a=>cardHTML(a)).join('') : '<div class="empty"><i class="ti ti-inbox"></i>Nenhum atendimento encontrado</div>';
+  document.getElementById('lista-ate').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--textlo)"><i class="ti ti-loader" style="animation:spin .7s linear infinite;font-size:24px;display:block;margin-bottom:8px"></i>Carregando...</div>';
+  try {
+    let url = `/rest/v1/atendimentos?order=created_at.desc&select=*`;
+    if(CU.perfil==='tecnico') url += `&tecnico_id=eq.${CU.id}`;
+    if(filtroAtual!=='todos') url += `&status=eq.${filtroAtual}`;
+    const ates = await api(url);
+    const el = document.getElementById('lista-ate');
+    el.innerHTML = ates.length ? ates.map(a=>cardHTML(a)).join('') : '<div class="empty"><i class="ti ti-inbox"></i>Nenhum atendimento encontrado</div>';
+  } catch(e) { document.getElementById('lista-ate').innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i>Erro: ${e.message}</div>`; }
 }
 
 function filtrar(f, btn) {
@@ -755,186 +593,232 @@ function filtrar(f, btn) {
   renderLista();
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // COBRANÇAS
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function renderCobrancas() {
-  document.getElementById('lista-cobrancas').innerHTML = loadingHTML();
-  const { data: pendentes } = await sb.from('atendimentos').select('*').eq('status','concluido').eq('cobrado',false).order('created_at',{ascending:false});
-  const { data: cobrados }  = await sb.from('atendimentos').select('*').eq('cobrado',true).order('created_at',{ascending:false}).limit(20);
-  const el = document.getElementById('lista-cobrancas');
-  let html = '';
-  const p = pendentes||[];
-  if(p.length) {
-    const total = p.reduce((s,a)=>s+Number(a.valor),0);
-    html += `<div class="reminder"><i class="ti ti-alert-circle"></i><div class="reminder-text"><strong>${p.length} pendente(s)</strong> — R$ ${total.toFixed(2).replace('.',',')} a receber</div></div>`;
-    html += `<div class="section-title"><i class="ti ti-clock" style="font-size:14px;"></i> Aguardando cobrança</div>`;
-    html += p.map(a=>cardHTML(a)).join('');
-  }
-  const c = cobrados||[];
-  if(c.length) {
-    html += `<div class="glow-line"></div><div class="section-title"><i class="ti ti-check" style="font-size:14px;"></i> Já cobrados</div>`;
-    html += c.map(a=>cardHTML(a)).join('');
-  }
-  if(!html) html = '<div class="empty"><i class="ti ti-check"></i>Tudo cobrado!</div>';
-  el.innerHTML = html;
+  document.getElementById('lista-cobr').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--textlo)"><i class="ti ti-loader" style="animation:spin .7s linear infinite;font-size:24px;display:block;margin-bottom:8px"></i>Carregando...</div>';
+  try {
+    const pendentes = await api('/rest/v1/atendimentos?status=eq.concluido&cobrado=eq.false&order=created_at.desc&select=*');
+    const cobrados  = await api('/rest/v1/atendimentos?cobrado=eq.true&order=created_at.desc&limit=20&select=*');
+    const el = document.getElementById('lista-cobr');
+    let html = '';
+    if(pendentes.length) {
+      const total = pendentes.reduce((s,a)=>s+Number(a.valor||0),0);
+      html += `<div class="reminder"><i class="ti ti-alert-circle"></i><div class="reminder-text"><strong>${pendentes.length} pendente(s)</strong> — ${moeda(total)} a receber</div></div>`;
+      html += `<div class="sec-title"><i class="ti ti-clock" style="font-size:14px"></i> Aguardando cobrança</div>`;
+      html += pendentes.map(a=>cardHTML(a)).join('');
+    }
+    if(cobrados.length) {
+      html += `<div class="glow-line"></div><div class="sec-title"><i class="ti ti-check" style="font-size:14px"></i> Já cobrados</div>`;
+      html += cobrados.map(a=>cardHTML(a)).join('');
+    }
+    if(!html) html='<div class="empty"><i class="ti ti-check"></i>Tudo cobrado!</div>';
+    el.innerHTML = html;
+  } catch(e) { document.getElementById('lista-cobr').innerHTML = `<div class="empty"><i class="ti ti-alert-circle"></i>Erro: ${e.message}</div>`; }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // CLIENTES
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function renderClientes() {
-  document.getElementById('lista-clientes').innerHTML = loadingHTML();
-  const { data } = await sb.from('clientes').select('*').order('nome');
-  const list = data || [];
-  const el = document.getElementById('lista-clientes');
-  if(!list.length) { el.innerHTML='<div class="empty"><i class="ti ti-users"></i>Nenhum cliente cadastrado</div>'; return; }
-  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
-    <table class="tbl"><thead><tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Segmento</th><th></th></tr></thead>
-    <tbody>${list.map(c=>`<tr>
-      <td style="color:var(--text-hi);font-weight:600;">${c.nome}</td>
-      <td>${c.whatsapp||'—'}</td><td>${c.email||'—'}</td>
-      <td>${c.segmento?`<span class="badge badge-atendente">${c.segmento}</span>`:'—'}</td>
-      <td><button class="btn btn-sm btn-danger" onclick="excluirCliente(${c.id})"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('')}</tbody></table></div>`;
+  document.getElementById('lista-cli').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--textlo)">Carregando...</div>';
+  try {
+    const cli = await api('/rest/v1/clientes?order=nome&select=*');
+    const el = document.getElementById('lista-cli');
+    if(!cli.length) { el.innerHTML='<div class="empty"><i class="ti ti-users"></i>Nenhum cliente cadastrado</div>'; return; }
+    el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+      <table class="tbl"><thead><tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Segmento</th><th></th></tr></thead>
+      <tbody>${cli.map(c=>`<tr>
+        <td style="color:var(--texthi);font-weight:600">${c.nome}</td>
+        <td>${c.whatsapp||'—'}</td><td>${c.email||'—'}</td>
+        <td>${c.segmento?`<span class="badge badge-atendente">${c.segmento}</span>`:'—'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="excluirCli(${c.id})"><i class="ti ti-trash"></i></button></td>
+      </tr>`).join('')}</tbody></table></div>`;
+  } catch(e) { document.getElementById('lista-cli').innerHTML=`<div class="empty"><i class="ti ti-alert-circle"></i>Erro: ${e.message}</div>`; }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // EQUIPE
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function renderEquipe() {
-  document.getElementById('lista-equipe').innerHTML = loadingHTML();
-  const { data } = await sb.from('profiles').select('*').order('nome');
-  const list = data || [];
-  const el = document.getElementById('lista-equipe');
-  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
-    <table class="tbl"><thead><tr><th>Usuário</th><th>Perfil</th><th>Status</th><th></th></tr></thead>
-    <tbody>${list.map(u=>`<tr>
-      <td><div style="display:flex;align-items:center;gap:10px;">
-        <div class="avatar" style="width:28px;height:28px;font-size:11px;">${initials(u.nome)}</div>
-        <span style="color:var(--text-hi);font-weight:600;">${u.nome}</span>
-      </div></td>
-      <td><span class="badge badge-${u.perfil}">${roleLabel[u.perfil]}</span></td>
-      <td><span class="badge ${u.ativo?'badge-done':'badge-cobrar'}">${u.ativo?'Ativo':'Inativo'}</span></td>
-      <td>${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.id}')"><i class="ti ti-trash"></i></button>`:''}</td>
-    </tr>`).join('')}</tbody></table></div>`;
+  document.getElementById('lista-equipe').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--textlo)">Carregando...</div>';
+  try {
+    const users = await api('/rest/v1/usuarios?order=nome&select=id,nome,email,perfil,ativo');
+    const el = document.getElementById('lista-equipe');
+    el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+      <table class="tbl"><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th><th></th></tr></thead>
+      <tbody>${users.map(u=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:28px;height:28px;font-size:11px">${initials(u.nome)}</div>
+          <span style="color:var(--texthi);font-weight:600">${u.nome}</span>
+        </div></td>
+        <td>${u.email}</td>
+        <td><span class="badge badge-${u.perfil}">${roleLabel[u.perfil]}</span></td>
+        <td><span class="badge ${u.ativo?'badge-done':'badge-cobrar'}">${u.ativo?'Ativo':'Inativo'}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-outline" onclick="editarUsr(${u.id},'${u.nome}','${u.email}','${u.perfil}')"><i class="ti ti-pencil"></i></button>
+          ${u.id!==CU.id?`<button class="btn btn-sm btn-danger" onclick="excluirUsr(${u.id})"><i class="ti ti-trash"></i></button>`:''}
+        </td>
+      </tr>`).join('')}</tbody></table></div>`;
+  } catch(e) { document.getElementById('lista-equipe').innerHTML=`<div class="empty"><i class="ti ti-alert-circle"></i>Erro: ${e.message}</div>`; }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // ACTIONS
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 async function mudarStatus(id, novo) {
-  const { error } = await sb.from('atendimentos').update({status:novo}).eq('id',id);
-  if(error) { toast('Erro ao atualizar status','error'); return; }
-  toast(novo==='concluido'?'Atendimento concluído!':'Status atualizado');
-  renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  try {
+    await api(`/rest/v1/atendimentos?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({status:novo}) });
+    toast(novo==='concluido'?'Atendimento concluído!':'Status atualizado');
+    renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
 async function marcarCobrado(id) {
-  const { error } = await sb.from('atendimentos').update({cobrado:true}).eq('id',id);
-  if(error) { toast('Erro ao marcar cobrado','error'); return; }
-  toast('Marcado como cobrado!');
-  renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  try {
+    await api(`/rest/v1/atendimentos?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({cobrado:true}) });
+    toast('Marcado como cobrado!');
+    renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-async function excluir(id) {
-  if(!confirm('Excluir este atendimento?')) return;
-  const { error } = await sb.from('atendimentos').delete().eq('id',id);
-  if(error) { toast('Erro ao excluir','error'); return; }
-  toast('Atendimento excluído');
-  renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+async function excluirAte(id) {
+  if(!confirm('Excluir atendimento?')) return;
+  try {
+    await api(`/rest/v1/atendimentos?id=eq.${id}`, { method:'DELETE' });
+    toast('Excluído');
+    renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-async function excluirCliente(id) {
+async function excluirCli(id) {
   if(!confirm('Excluir cliente?')) return;
-  await sb.from('clientes').delete().eq('id',id);
-  toast('Cliente removido'); renderClientes();
+  try { await api(`/rest/v1/clientes?id=eq.${id}`, {method:'DELETE'}); toast('Cliente removido'); renderClientes(); }
+  catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-async function excluirUsuario(id) {
-  if(!confirm('Remover usuário?')) return;
-  await sb.from('profiles').update({ativo:false}).eq('id',id);
-  toast('Usuário desativado'); renderEquipe();
+async function excluirUsr(id) {
+  if(!confirm('Desativar usuário?')) return;
+  try { await api(`/rest/v1/usuarios?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({ativo:false})}); toast('Usuário desativado'); renderEquipe(); }
+  catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 // SAVE
-// ══════════════════════════════════
-async function salvarAtendimento() {
-  const c   = document.getElementById('f-cliente').value.trim();
-  const a   = document.getElementById('f-acesso').value;
-  const ao  = document.getElementById('f-acesso-outro').value.trim();
-  const s   = document.getElementById('f-servico').value.trim();
-  const tid = document.getElementById('f-tecnico').value;
-  if(!c||!a||!s||!tid) { toast('Preencha os campos obrigatórios','error'); return; }
-  const tec = tecnicos.find(t=>t.id===tid);
-  const btn = document.getElementById('btn-salvar-ate');
-  btn.disabled = true;
-  const { error } = await sb.from('atendimentos').insert({
-    cliente:c, acesso:a==='Outro'?ao||a:a, servico:s,
-    tecnico_id:tid, tecnico_nome:tec?.nome||'',
-    valor:parseFloat(document.getElementById('f-valor').value)||0,
-    status:document.getElementById('f-status').value,
-    obs:document.getElementById('f-obs').value.trim(),
-    data:hoje(), cobrado:false,
-    criado_por:currentUser.id
-  });
-  btn.disabled = false;
-  if(error) { toast('Erro ao salvar: '+error.message,'error'); return; }
-  toast('Atendimento salvo!');
-  closeModal('modal-novo');
-  ['f-cliente','f-acesso','f-acesso-outro','f-servico','f-valor','f-obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-tecnico').selectedIndex=0;
-  document.getElementById('f-status').selectedIndex=0;
-  document.getElementById('f-outro-wrap').style.display='none';
-  renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+// ══════════════════════════════════════════
+async function salvarAte() {
+  const cli  = document.getElementById('fa-cli').value.trim();
+  const acs  = document.getElementById('fa-acs').value;
+  const out  = document.getElementById('fa-outro').value.trim();
+  const srv  = document.getElementById('fa-srv').value.trim();
+  const tid  = document.getElementById('fa-tec').value;
+  if(!cli||!acs||!srv||!tid) { toast('Preencha os campos obrigatórios','err'); return; }
+  const tec = tecnicos.find(t=>String(t.id)===String(tid));
+  try {
+    await api('/rest/v1/atendimentos', { method:'POST', body: JSON.stringify({
+      cliente:cli, acesso:acs==='Outro'?out||acs:acs, servico:srv,
+      tecnico_id:Number(tid), tecnico_nome:tec?.nome||'',
+      valor:parseFloat(document.getElementById('fa-val').value)||0,
+      status:document.getElementById('fa-sts').value,
+      obs:document.getElementById('fa-obs').value.trim(),
+      data:hoje(), cobrado:false, criado_por:CU.id
+    })});
+    toast('Atendimento salvo!');
+    closeModal('modal-ate');
+    ['fa-cli','fa-srv','fa-val','fa-obs'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fa-acs').selectedIndex=0;
+    document.getElementById('fa-tec').selectedIndex=0;
+    document.getElementById('fa-sts').selectedIndex=0;
+    document.getElementById('fa-outro-wrap').style.display='none';
+    renderPage(document.querySelector('.page.active')?.id?.replace('page-',''));
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-async function salvarCliente() {
+async function salvarCli() {
   const n = document.getElementById('fc-nome').value.trim();
-  if(!n) { toast('Informe o nome','error'); return; }
-  const { error } = await sb.from('clientes').insert({
-    nome:n, whatsapp:document.getElementById('fc-wpp').value.trim(),
-    email:document.getElementById('fc-email').value.trim(),
-    segmento:document.getElementById('fc-seg').value,
-    obs:document.getElementById('fc-obs').value.trim()
-  });
-  if(error) { toast('Erro ao salvar','error'); return; }
-  toast('Cliente cadastrado!');
-  closeModal('modal-cliente');
-  ['fc-nome','fc-wpp','fc-email','fc-obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fc-seg').selectedIndex=0;
-  renderClientes();
+  if(!n) { toast('Informe o nome','err'); return; }
+  try {
+    await api('/rest/v1/clientes', { method:'POST', body: JSON.stringify({
+      nome:n, whatsapp:document.getElementById('fc-wpp').value.trim(),
+      email:document.getElementById('fc-email').value.trim(),
+      segmento:document.getElementById('fc-seg').value,
+      obs:document.getElementById('fc-obs').value.trim()
+    })});
+    toast('Cliente cadastrado!');
+    closeModal('modal-cli');
+    ['fc-nome','fc-wpp','fc-email','fc-obs'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fc-seg').selectedIndex=0;
+    renderClientes();
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-async function salvarUsuario() {
+async function salvarUsr() {
   const n = document.getElementById('fu-nome').value.trim();
   const e = document.getElementById('fu-email').value.trim();
   const p = document.getElementById('fu-perfil').value;
-  const s = document.getElementById('fu-senha').value;
-  if(!n||!e||!s) { toast('Preencha todos os campos','error'); return; }
-  const { error } = await sb.auth.signUp({
-    email:e, password:s,
-    options:{ data:{ nome:n, perfil:p } }
-  });
-  if(error) { toast('Erro: '+error.message,'error'); return; }
-  toast('Usuário criado! Ele pode fazer login agora.');
-  closeModal('modal-usuario');
-  ['fu-nome','fu-email','fu-senha'].forEach(id=>document.getElementById(id).value='');
-  renderEquipe();
+  const s = document.getElementById('fu-senha').value.trim();
+  if(!n||!e||!s) { toast('Preencha todos os campos','err'); return; }
+  if(s.length < 6) { toast('Senha deve ter ao menos 6 caracteres','err'); return; }
+  try {
+    await api('/rest/v1/usuarios', { method:'POST', body: JSON.stringify({nome:n, email:e, perfil:p, senha:s, ativo:true}) });
+    toast('Usuário criado!');
+    closeModal('modal-usr');
+    ['fu-nome','fu-email','fu-senha'].forEach(id=>document.getElementById(id).value='');
+    loadTecnicos();
+    renderEquipe();
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-// ══════════════════════════════════
+// ══════════════════════════════════════════
+// EDITAR USUÁRIO
+// ══════════════════════════════════════════
+function editarUsr(id, nome, email, perfil) {
+  document.getElementById('eu-id').value = id;
+  document.getElementById('eu-nome').value = nome;
+  document.getElementById('eu-email').value = email;
+  document.getElementById('eu-perfil').value = perfil;
+  document.getElementById('eu-senha').value = '';
+  openModal('modal-edit-usr');
+}
+
+async function salvarEditUsr() {
+  const id    = document.getElementById('eu-id').value;
+  const nome  = document.getElementById('eu-nome').value.trim();
+  const email = document.getElementById('eu-email').value.trim();
+  const perfil = document.getElementById('eu-perfil').value;
+  const senha = document.getElementById('eu-senha').value.trim();
+  if(!nome || !email) { toast('Preencha nome e e-mail', 'err'); return; }
+  if(senha && senha.length < 6) { toast('Senha deve ter ao menos 6 caracteres', 'err'); return; }
+  const body = { nome, email, perfil };
+  if(senha) body.senha = senha;
+  try {
+    await api(`/rest/v1/usuarios?id=eq.${id}`, { method:'PATCH', body: JSON.stringify(body) });
+    toast('Usuário atualizado!');
+    closeModal('modal-edit-usr');
+    // Atualiza sessão se editou o próprio usuário
+    if(Number(id) === CU.id) {
+      CU = { ...CU, nome, email, perfil };
+      localStorage.setItem('tia_user', JSON.stringify(CU));
+      setupUI();
+    }
+    loadTecnicos();
+    renderEquipe();
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
+}
+
+// ══════════════════════════════════════════
 // MODALS
-// ══════════════════════════════════
+// ══════════════════════════════════════════
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m=>{
-  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
-});
-document.getElementById('f-acesso').addEventListener('change',function(){
-  document.getElementById('f-outro-wrap').style.display=this.value==='Outro'?'block':'none';
-});
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); }));
+document.getElementById('fa-acs').addEventListener('change', function(){ document.getElementById('fa-outro-wrap').style.display=this.value==='Outro'?'block':'none'; });
+
+// CSS spin
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
 </script>
 </body>
 </html>
