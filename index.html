@@ -722,7 +722,7 @@ async function salvarAte() {
       valor:parseFloat(document.getElementById('fa-val').value)||0,
       status:document.getElementById('fa-sts').value,
       obs:document.getElementById('fa-obs').value.trim(),
-      data:hoje(), cobrado:false, criado_por:CU.id
+      data:hoje(), cobrado:false
     })});
     toast('Atendimento salvo!');
     closeModal('modal-ate');
